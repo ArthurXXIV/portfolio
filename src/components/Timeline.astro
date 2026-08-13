@@ -1,0 +1,347 @@
+---
+// Alternating timeline: a central spine with cards flipping out to either side.
+// Cards hinge on their inner edge so the pair reads like an open book.
+
+interface Entry {
+	kind: string;
+	code?: string;
+	title: string;
+	org: string;
+	date: string;
+	logo?: string | null;
+}
+
+interface Props {
+	entries: readonly Entry[];
+}
+
+const { entries } = Astro.props;
+---
+
+<div class="tl">
+	<span class="tl-spine" aria-hidden="true"></span>
+
+	<ol class="tl-items">
+		{
+			entries.map((e, i) => (
+				<li class={`tl-row tl-${i % 2 === 0 ? 'left' : 'right'}`} style={`--i:${i}`}>
+					<span class={`tl-dot tl-dot-${e.kind}`} aria-hidden="true" />
+
+					<article class={`tl-card tl-card-${e.kind}`}>
+						{e.logo ? (
+							<img class="tl-logo" src={e.logo} alt="" loading="lazy" decoding="async" />
+						) : (
+						<span class="tl-icon" aria-hidden="true">
+							{e.kind === 'course' && (
+								<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+									<path d="M6 3h9l4 4v14H6z" stroke-linejoin="round" />
+									<path d="M14 3v5h5" stroke-linejoin="round" />
+									<circle cx="12" cy="14" r="2.2" />
+									<path d="M10.4 16v3l1.6-1 1.6 1v-3" stroke-linejoin="round" />
+								</svg>
+							)}
+							{e.kind === 'degree' && (
+								<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+									<path d="M12 4 2 9l10 5 10-5z" stroke-linejoin="round" />
+									<path d="M6 11.5V17c0 1.4 2.7 2.6 6 2.6s6-1.2 6-2.6v-5.5" stroke-linejoin="round" />
+								</svg>
+							)}
+							{e.kind === 'activity' && (
+								<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+									<circle cx="12" cy="12" r="8.5" />
+									<path d="M4.5 9.5c4 2 11 2 15 0M12 3.5c2.5 3 2.5 14 0 17" stroke-linejoin="round" />
+								</svg>
+							)}
+							{e.kind === 'milestone' && (
+								<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7">
+									<path
+										d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"
+										stroke-linejoin="round"
+									/>
+								</svg>
+							)}
+						</span>
+						)}
+
+						<div class="tl-text">
+							{e.code && <span class="tl-code mono">{e.code}</span>}
+							<h4 class="tl-title">{e.title}</h4>
+							<p class="tl-org muted">{e.org}</p>
+							<p class="tl-date mono">{e.date}</p>
+						</div>
+					</article>
+				</li>
+			))
+		}
+	</ol>
+</div>
+
+<style>
+	.tl {
+		position: relative;
+		/* The 3D rotation projects each card ~20px past its layout box, so the
+		   container reserves a gutter wider than that on both sides. Without it
+		   the outer edges punch out of the modal. */
+		padding: 0.5rem 2.75rem 0.25rem;
+	}
+
+	.tl-spine {
+		position: absolute;
+		left: 50%;
+		top: 0;
+		bottom: 0;
+		width: 1px;
+		transform: translateX(-0.5px);
+		background: linear-gradient(
+			180deg,
+			transparent,
+			color-mix(in srgb, var(--accent) 60%, transparent) 8%,
+			color-mix(in srgb, var(--accent) 60%, transparent) 92%,
+			transparent
+		);
+	}
+
+	.tl-items {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+	}
+
+	.tl-row {
+		position: relative;
+		display: flex;
+		min-height: 3.1rem;
+		padding-block: 0.35rem;
+	}
+
+	.tl-left {
+		justify-content: flex-start;
+		padding-right: calc(50% + 1.9rem);
+	}
+
+	.tl-right {
+		justify-content: flex-end;
+		padding-left: calc(50% + 1.9rem);
+	}
+
+	/* Node on the spine. */
+	.tl-dot {
+		position: absolute;
+		left: 50%;
+		top: 1.35rem;
+		width: 9px;
+		height: 9px;
+		margin-left: -4.5px;
+		border-radius: 50%;
+		background: var(--bg);
+		border: 2px solid var(--accent);
+		z-index: 1;
+	}
+
+	.tl-dot-activity {
+		border-color: var(--accent-2);
+		background: var(--accent-2);
+	}
+
+	.tl-dot-milestone {
+		border-color: var(--accent-3);
+		background: var(--accent-3);
+		box-shadow: 0 0 9px var(--accent-3);
+	}
+
+	.tl-dot-degree {
+		background: var(--accent);
+		box-shadow: 0 0 9px var(--accent);
+	}
+
+	/* The book hinge: each card pivots on the edge nearest the spine. */
+	.tl-card {
+		position: relative;
+		display: flex;
+		gap: 0.6rem;
+		width: 100%;
+		padding: 0.6rem 0.75rem;
+		border: 1px solid var(--border);
+		transform-style: preserve-3d;
+		transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease,
+			box-shadow 0.3s ease;
+	}
+
+	/* Tilt is permanent, not hover-driven. Each card hinges on its inner edge and
+	   rotates so the OUTER edge swings toward the reader, angling the faces in
+	   toward the spine, like an open book seen from above.
+
+	   The perspective() function is applied per card rather than relying on the
+	   `perspective` property on .tl, because that property only affects an element's
+	   DIRECT children, and .tl-card is three levels deeper, so the rotation
+	   would otherwise flatten into a plain horizontal squash. */
+	/* Light sheen from the inner (spine-side) edge outward, kept subtle so the
+	   depth reads from the cast shadow rather than the fill. */
+	.tl-left .tl-card {
+		transform-origin: right center;
+		transform: perspective(1800px) rotateY(14deg);
+		background: linear-gradient(270deg, var(--bg-raised) 0%, var(--bg-panel) 70%);
+		/* Elliptical radii on the two spine-side corners: a small horizontal
+		   radius with a 50% vertical one makes both curves meet mid-edge, bowing
+		   the whole inner edge instead of just rounding the corners. */
+		border-radius: 10px 26px 26px 10px / 10px 50% 50% 10px;
+		padding-right: 1.5rem;
+	}
+
+	.tl-right .tl-card {
+		transform-origin: left center;
+		transform: perspective(1800px) rotateY(-14deg);
+		background: linear-gradient(90deg, var(--bg-raised) 0%, var(--bg-panel) 70%);
+		border-radius: 26px 10px 10px 26px / 50% 10px 10px 50%;
+		padding-left: 1.5rem;
+	}
+
+	/* Cast shadow on the "floor" beneath each card. Pushed back in Z so it sits
+	   behind the tilted face and reads as the card floating above the page. */
+	.tl-card::after {
+		content: '';
+		position: absolute;
+		left: 5%;
+		right: 5%;
+		bottom: -13px;
+		height: 18px;
+		z-index: -1;
+		border-radius: 50%;
+		/* USC cardinal core warming to gold at the edge, rather than neutral black. */
+		background: radial-gradient(
+			ellipse at 50% 40%,
+			rgba(153, 0, 0, 0.85) 0%,
+			rgba(153, 0, 0, 0.5) 42%,
+			rgba(255, 204, 0, 0.18) 68%,
+			rgba(255, 204, 0, 0) 80%
+		);
+		filter: blur(8px);
+		transform: translateZ(-40px);
+		transition: opacity 0.45s ease, transform 0.45s ease;
+	}
+
+	/* Lifting the card throws a larger, softer shadow. */
+	.tl-card:hover::after {
+		transform: translateZ(-40px) scale(1.1);
+		background: radial-gradient(
+			ellipse at 50% 40%,
+			rgba(153, 0, 0, 0.95) 0%,
+			rgba(153, 0, 0, 0.6) 42%,
+			rgba(255, 204, 0, 0.26) 68%,
+			rgba(255, 204, 0, 0) 82%
+		);
+	}
+
+	/* Hover keeps the angle and just lifts the page toward the reader. */
+	.tl-left .tl-card:hover {
+		transform: perspective(1800px) rotateY(14deg) translateZ(26px);
+		border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+		box-shadow: 0 22px 45px rgba(0, 0, 0, 0.55);
+	}
+
+	.tl-right .tl-card:hover {
+		transform: perspective(1800px) rotateY(-14deg) translateZ(26px);
+		border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+		box-shadow: 0 22px 45px rgba(0, 0, 0, 0.55);
+	}
+
+	.tl-icon {
+		flex: none;
+		width: 1.8rem;
+		height: 1.8rem;
+		display: grid;
+		place-items: center;
+		border-radius: 8px;
+		background: var(--bg-raised);
+		border: 1px solid var(--border);
+		color: var(--accent-2);
+	}
+
+	.tl-logo {
+		flex: none;
+		width: 1.8rem;
+		height: 1.8rem;
+		object-fit: contain;
+		border-radius: 8px;
+		border: 1px solid var(--border);
+		background: var(--bg);
+	}
+
+	.tl-card-milestone .tl-icon {
+		color: var(--accent-3);
+	}
+
+	.tl-card-degree .tl-icon {
+		color: var(--accent);
+	}
+
+	.tl-text {
+		min-width: 0;
+	}
+
+	.tl-code {
+		display: inline-block;
+		font-size: 0.58rem;
+		letter-spacing: 0.12em;
+		color: var(--accent);
+		border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+		border-radius: 3px;
+		padding: 0.1rem 0.32rem;
+		margin-bottom: 0.35rem;
+	}
+
+	.tl-title {
+		margin: 0;
+		font-size: 0.82rem;
+		font-weight: 600;
+		line-height: 1.35;
+	}
+
+	.tl-org {
+		margin: 0.15rem 0 0;
+		font-size: 0.7rem;
+	}
+
+	.tl-date {
+		margin: 0.2rem 0 0;
+		font-size: 0.64rem;
+		color: var(--text-faint);
+	}
+
+	/* Single column on narrow screens: spine moves left, no alternation. */
+	@media (max-width: 640px) {
+		.tl-spine {
+			left: 5px;
+		}
+
+		.tl-left,
+		.tl-right {
+			justify-content: flex-start;
+			padding-left: 1.75rem;
+			padding-right: 0;
+		}
+
+		.tl-dot {
+			left: 5px;
+		}
+
+		.tl-left .tl-card,
+		.tl-right .tl-card,
+		.tl-left .tl-card:hover,
+		.tl-right .tl-card:hover {
+			transform-origin: left center;
+			transform: perspective(900px) rotateY(-9deg);
+			border-radius: 22px 10px 10px 22px / 50% 10px 10px 50%;
+			padding-left: 1.35rem;
+			padding-right: 0.75rem;
+		}
+	}
+
+	/* Reduced motion kills the hover transition, but the static tilt is not
+	   motion, so it stays and the layout still reads as intended. */
+	@media (prefers-reduced-motion: reduce) {
+		.tl-card {
+			transition: none;
+		}
+	}
+</style>

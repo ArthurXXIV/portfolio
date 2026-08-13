@@ -1,0 +1,118 @@
+---
+// Stylized astromech droid used as the "featured" marker.
+// Original simplified illustration, not a licensed likeness.
+
+interface Props {
+	label?: string;
+	size?: number;
+}
+
+const { label = 'Featured', size = 26 } = Astro.props;
+---
+
+<span class="droid-badge" title={label}>
+	<svg
+		class="droid"
+		width={size}
+		height={size}
+		viewBox="0 0 32 32"
+		fill="none"
+		role="img"
+		aria-label={`${label} marker`}
+	>
+		<!-- dome -->
+		<path d="M8 12a8 8 0 0 1 16 0z" fill="#d9dee8" />
+		<path d="M8 12a8 8 0 0 1 16 0z" stroke="#9aa4bd" stroke-width="0.8" />
+		<!-- dome eye -->
+		<circle class="droid-eye" cx="16" cy="7.4" r="2.1" fill="#1b2233" stroke="var(--accent)" stroke-width="1" />
+		<circle class="droid-glint" cx="16" cy="7.4" r="0.7" fill="var(--accent)" />
+		<!-- body -->
+		<rect x="8" y="12.5" width="16" height="15" rx="2.4" fill="#eef1f6" stroke="#9aa4bd" stroke-width="0.8" />
+		<!-- panels -->
+		<rect x="10.5" y="15" width="5" height="4" rx="0.8" fill="var(--accent)" opacity="0.85" />
+		<rect x="17" y="15" width="4.5" height="2.2" rx="0.6" fill="#3b4150" opacity="0.5" />
+		<rect x="10.5" y="21" width="11" height="1.4" rx="0.7" fill="#3b4150" opacity="0.35" />
+		<circle cx="12.4" cy="24.6" r="1" fill="var(--accent-2)" />
+		<circle cx="15.6" cy="24.6" r="1" fill="#ff4d5e" opacity="0.75" />
+		<!-- legs -->
+		<path d="M7.5 14.5 5 17v9.5h3z" fill="#d9dee8" stroke="#9aa4bd" stroke-width="0.7" />
+		<path d="M24.5 14.5 27 17v9.5h-3z" fill="#d9dee8" stroke="#9aa4bd" stroke-width="0.7" />
+	</svg>
+	<span class="droid-label mono">{label}</span>
+</span>
+
+<style>
+	.droid-badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.3rem 0.6rem 0.3rem 0.4rem;
+		border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+		background: color-mix(in srgb, var(--accent) 8%, var(--bg-panel));
+		border-radius: 999px;
+		white-space: nowrap;
+	}
+
+	.droid {
+		flex: none;
+		/* Gentle idle bob so the droid feels alive without being distracting. */
+		animation: droid-bob 3.6s ease-in-out infinite;
+	}
+
+	.droid-eye {
+		animation: droid-scan 5s ease-in-out infinite;
+	}
+
+	.droid-glint {
+		animation: droid-blink 5s ease-in-out infinite;
+	}
+
+	.droid-label {
+		font-size: 0.66rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--accent);
+	}
+
+	@keyframes droid-bob {
+		0%,
+		100% {
+			transform: translateY(0) rotate(0deg);
+		}
+		50% {
+			transform: translateY(-2px) rotate(-3deg);
+		}
+	}
+
+	@keyframes droid-scan {
+		0%,
+		100% {
+			transform: translateX(0);
+		}
+		30% {
+			transform: translateX(-1.4px);
+		}
+		60% {
+			transform: translateX(1.4px);
+		}
+	}
+
+	@keyframes droid-blink {
+		0%,
+		92%,
+		100% {
+			opacity: 1;
+		}
+		95% {
+			opacity: 0.15;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.droid,
+		.droid-eye,
+		.droid-glint {
+			animation: none;
+		}
+	}
+</style>

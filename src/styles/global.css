@@ -1,0 +1,608 @@
+/* ------------------------------------------------------------------------
+   Theme: deep space + lightsaber accents.
+
+   Dark is the default and lives on :root. Light is an override keyed on
+   [data-theme='light'], which the toggle in the nav writes onto <html>.
+   Every colour is a token, so the toggle only has to swap this one block.
+   ------------------------------------------------------------------------ */
+
+:root {
+	--bg: #05070d;
+	--bg-raised: #0b0f18;
+	--bg-panel: #0f1420;
+	--text: #e9edf7;
+	--text-muted: #9aa4bd;
+	--text-faint: #67718c;
+	--border: #1b2233;
+	--border-strong: #2b3550;
+
+	/* Saber-inspired accents, used as a pair for gradients. */
+	--accent: #4db8ff;
+	--accent-2: #8ef5d0;
+	--accent-3: #b072ff;
+
+	/* Market signals */
+	--up: #4dff88;
+	--down: #ff4d5e;
+
+	--font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+	--font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+	--maxw: 62rem;
+	--gap: clamp(4rem, 10vw, 7rem);
+
+	color-scheme: dark;
+}
+
+/* Daylight. The accents darken rather than staying as-is: the same blue that
+   glows on near-black is unreadable on white, so each one is deepened until it
+   passes contrast against the light surfaces. */
+:root[data-theme='light'] {
+	--bg: #f4f6fb;
+	--bg-raised: #ffffff;
+	--bg-panel: #eaeef7;
+	--text: #10141f;
+	--text-muted: #4a5570;
+	--text-faint: #6f7a94;
+	--border: #d5dcea;
+	--border-strong: #b6c0d6;
+
+	--accent: #0b6fc4;
+	--accent-2: #0f8f6d;
+	--accent-3: #6a35c9;
+
+	--up: #128a45;
+	--down: #c62a3c;
+
+	color-scheme: light;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--text);
+	font-family: var(--font-sans);
+	font-size: 16px;
+	line-height: 1.65;
+	overflow-x: hidden;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Content sits above the animated canvas background. */
+.page {
+	position: relative;
+	z-index: 1;
+}
+
+a {
+	color: inherit;
+	text-decoration-color: var(--border-strong);
+	text-underline-offset: 3px;
+	transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+a:hover {
+	color: var(--accent);
+	text-decoration-color: var(--accent);
+}
+
+h1,
+h2,
+h3 {
+	margin: 0;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+	font-weight: 600;
+}
+
+.wrap {
+	max-width: var(--maxw);
+	margin: 0 auto;
+	padding: 0 1.5rem;
+}
+
+/* Sections ---------------------------------------------------------------- */
+
+.section {
+	padding-block: var(--gap);
+	border-top: 1px solid var(--border);
+}
+
+.section-label {
+	font-size: clamp(1.6rem, 4vw, 2.1rem);
+	font-weight: 700;
+	letter-spacing: -0.025em;
+	color: var(--text);
+	margin: 0 0 2.5rem;
+	padding-bottom: 0.7rem;
+	position: relative;
+}
+
+/* Short saber-gradient underline beneath each section title. */
+.section-label::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 3.2rem;
+	height: 3px;
+	border-radius: 3px;
+	background: linear-gradient(90deg, var(--accent), var(--accent-2));
+	box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* Anchored sections need clearance for the sticky nav. */
+.section,
+.hero {
+	scroll-margin-top: 4.5rem;
+}
+
+/* Chips ------------------------------------------------------------------- */
+
+.chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.chip {
+	font-family: var(--font-mono);
+	font-size: 0.72rem;
+	line-height: 1;
+	padding: 0.4rem 0.6rem;
+	border-radius: 4px;
+	background: var(--bg-panel);
+	border: 1px solid var(--border);
+	color: var(--text-muted);
+	white-space: nowrap;
+	transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.chip:hover {
+	border-color: var(--accent);
+	color: var(--text);
+}
+
+.chip-accent {
+	color: var(--accent);
+	border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+	background: color-mix(in srgb, var(--accent) 8%, var(--bg-panel));
+}
+
+/* Scroll reveal ----------------------------------------------------------- */
+
+.reveal {
+	opacity: 0;
+	transform: translateY(24px);
+	transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.in-view {
+	opacity: 1;
+	transform: none;
+}
+
+/* Utility ----------------------------------------------------------------- */
+
+.mono {
+	font-family: var(--font-mono);
+}
+
+.muted {
+	color: var(--text-muted);
+}
+
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 3px;
+	border-radius: 3px;
+}
+
+/* Motion & input preferences ---------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+	}
+
+	.reveal {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+/* ==========================================================================
+   SHARED COMPONENT STYLES
+   Anything used by more than one section lives here. Section-specific styles
+   stay inside their own component file.
+   ========================================================================== */
+
+/* Buttons ----------------------------------------------------------------- */
+
+.btn {
+	display: inline-block;
+	padding: 0.55rem 1.05rem;
+	border: 1px solid var(--border-strong);
+	border-radius: 6px;
+	font-size: 0.88rem;
+	text-decoration: none;
+	background: color-mix(in srgb, var(--bg-raised) 70%, transparent);
+	backdrop-filter: blur(6px);
+	transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.btn:hover {
+	color: var(--accent);
+	border-color: var(--accent);
+	box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 30%, transparent);
+	transform: translateY(-1px);
+}
+
+.btn-primary {
+	border-color: var(--accent);
+	color: var(--accent);
+	box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.icon-links {
+	display: inline-flex;
+	gap: 0.5rem;
+}
+
+.icon-btn {
+	display: grid;
+	place-items: center;
+	width: 2.45rem;
+	height: 2.45rem;
+	border: 1px solid var(--border-strong);
+	border-radius: 8px;
+	color: var(--text-muted);
+	background: color-mix(in srgb, var(--bg-raised) 70%, transparent);
+	backdrop-filter: blur(6px);
+	text-decoration: none;
+	transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.icon-btn:hover {
+	color: var(--accent);
+	border-color: var(--accent);
+	box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 30%, transparent);
+	transform: translateY(-2px);
+}
+
+/* Body copy --------------------------------------------------------------- */
+
+.about-text {
+	font-size: 1.02rem;
+	color: var(--text-muted);
+	max-width: 44rem;
+	margin: 0 0 1.15rem;
+}
+
+.section-hint {
+	margin: -1.75rem 0 2.25rem;
+	font-style: italic;
+	font-size: 0.88rem;
+	color: var(--text-faint);
+}
+
+.dot {
+	margin-inline: 0.4rem;
+	color: var(--text-faint);
+}
+
+/* Entry cards (Experience + Education) ------------------------------------ */
+
+.xp {
+	position: relative;
+	border: 1px solid var(--border);
+	/* Accent spine down the left edge. */
+	border-left: 3px solid var(--accent);
+	border-radius: 12px;
+	padding: 1.6rem 1.75rem;
+	margin-bottom: 1.25rem;
+	background: color-mix(in srgb, var(--bg-panel) 78%, transparent);
+	backdrop-filter: blur(8px);
+	transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+.xp[role='button'] {
+	cursor: pointer;
+}
+
+.xp:hover,
+.xp:focus-visible {
+	box-shadow: 0 0 30px color-mix(in srgb, var(--accent) 12%, transparent);
+	transform: translateY(-2px);
+	border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+	border-left-color: var(--accent);
+}
+
+.xp:last-child {
+	margin-bottom: 0;
+}
+
+.xp-top {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 1rem;
+	flex-wrap: wrap;
+}
+
+.xp-ident {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.9rem;
+}
+
+.xp-company-row {
+	display: flex;
+	align-items: center;
+	gap: 0.7rem;
+	flex-wrap: wrap;
+}
+
+.xp-company {
+	font-size: 1.12rem;
+	font-weight: 700;
+}
+
+.xp-role {
+	margin: 0.5rem 0 0;
+	font-size: 1rem;
+	font-weight: 600;
+	color: var(--accent);
+}
+
+.xp-edu .xp-role {
+	color: var(--text-muted);
+	font-weight: 500;
+}
+
+.xp-loc {
+	margin: 0.3rem 0 0;
+	font-size: 0.8rem;
+}
+
+/* Date pill, top-right of each card. */
+.xp-date {
+	flex: none;
+	font-size: 0.76rem;
+	padding: 0.35rem 0.8rem;
+	border-radius: 999px;
+	border: 1px solid var(--border);
+	background: var(--bg-raised);
+	color: var(--text-muted);
+}
+
+.xp-overview {
+	margin: 1.1rem 0 0;
+	font-size: 0.95rem;
+	max-width: 46rem;
+}
+
+.xp-stack {
+	margin-top: 1.1rem;
+}
+
+/* Affordance that the card opens a dialog. */
+.xp-cue {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	margin-top: 1.3rem;
+	font-size: 0.72rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--accent);
+}
+
+.xp-cue-arrow {
+	transition: transform 0.25s ease;
+}
+
+.xp:hover .xp-cue-arrow {
+	transform: translateX(4px);
+}
+
+/* Impact metric tiles, shown inside experience modals. */
+.xp-impact {
+	list-style: none;
+	margin: 0 0 1.25rem;
+	padding: 0;
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+	gap: 0.75rem;
+}
+
+.xp-impact li {
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	padding: 0.8rem 0.9rem;
+	background: var(--bg-raised);
+}
+
+.xp-impact-value {
+	display: block;
+	font-size: 1.05rem;
+	font-weight: 600;
+	color: var(--accent-2);
+}
+
+.xp-impact-label {
+	display: block;
+	margin-top: 0.25rem;
+	font-size: 0.64rem;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--text-faint);
+}
+
+@media (max-width: 640px) {
+	.xp {
+		padding: 1.25rem 1.15rem;
+	}
+
+	.xp-date {
+		order: -1;
+	}
+}
+
+/* Modals ------------------------------------------------------------------ */
+
+.modal {
+	width: min(46rem, calc(100vw - 2rem));
+	max-height: min(85vh, 52rem);
+	padding: 0;
+	border: 1px solid var(--border-strong);
+	border-radius: 14px;
+	background: var(--bg-raised);
+	color: var(--text);
+	/* Vertical scroll only. The tilted timeline must never produce a
+	   horizontal scrollbar or bleed past the dialog edge. */
+	overflow-y: auto;
+	overflow-x: hidden;
+	overscroll-behavior: contain;
+}
+
+/* Education timelines are wider than experience detail. */
+.modal-wide {
+	width: min(74rem, calc(100vw - 2rem));
+	max-height: min(90vh, 60rem);
+}
+
+.modal::backdrop {
+	background: rgba(3, 5, 10, 0.72);
+	backdrop-filter: blur(4px);
+}
+
+/* Pop-out entrance, matching the card it grew from. */
+.modal[open] {
+	animation: modal-pop 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.modal[open]::backdrop {
+	animation: backdrop-in 0.28s ease;
+}
+
+@keyframes modal-pop {
+	from {
+		opacity: 0;
+		transform: translateY(14px) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes backdrop-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+.modal-inner {
+	padding: 1.75rem;
+}
+
+.modal-head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 1rem;
+	padding-bottom: 1.25rem;
+	border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+	font-size: 1.3rem;
+}
+
+.modal-sub {
+	margin: 0.35rem 0 0;
+	font-size: 0.9rem;
+}
+
+.modal-close {
+	flex: none;
+	width: 2rem;
+	height: 2rem;
+	display: grid;
+	place-items: center;
+	border-radius: 8px;
+	border: 1px solid var(--border-strong);
+	background: var(--bg-panel);
+	color: var(--text-muted);
+	font-size: 0.85rem;
+	cursor: pointer;
+	transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.modal-close:hover {
+	color: var(--accent);
+	border-color: var(--accent);
+}
+
+.modal-overview {
+	margin: 1.25rem 0 1.5rem;
+	font-size: 0.98rem;
+	color: var(--text-muted);
+}
+
+.modal-section {
+	margin: 1.75rem 0 0.9rem;
+	font-size: 0.7rem;
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--accent);
+	font-weight: 600;
+}
+
+.modal-bullets {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 0.75rem;
+}
+
+.modal-bullets li {
+	font-size: 0.93rem;
+	padding: 0.85rem 1rem;
+	border-radius: 8px;
+	background: var(--bg-panel);
+	border-left: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}

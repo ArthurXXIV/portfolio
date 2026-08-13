@@ -1,0 +1,62 @@
+---
+// Full detail for one role. Rendered once per experience entry and opened by
+// the matching card via ModalController.astro.
+import Logo from '../Logo.astro';
+
+interface Props {
+	job: (typeof import('../../data/content'))['experience'][number];
+}
+
+const { job } = Astro.props;
+---
+
+<dialog class="modal" id={`xp-modal-${job.id}`} aria-labelledby={`modal-title-${job.id}`}>
+	<div class="modal-inner">
+		<header class="modal-head">
+			<div class="xp-ident">
+				<Logo src={job.logo} name={job.company} size={54} plate={job.logoPlate} />
+				<div>
+					<h3 class="modal-title" id={`modal-title-${job.id}`}>{job.role}</h3>
+					<p class="modal-sub muted">
+						{job.company} <span class="dot">·</span> {job.dates}
+					</p>
+					<p class="xp-loc mono muted">{job.location}</p>
+				</div>
+			</div>
+
+			<button class="modal-close" type="button" aria-label="Close details">✕</button>
+		</header>
+
+		<p class="modal-overview">{job.overview}</p>
+
+		{
+			job.impact.length > 0 && (
+				<ul class="xp-impact">
+					{job.impact.map((metric) => (
+						<li>
+							<span class="xp-impact-value mono">{metric.value}</span>
+							<span class="xp-impact-label mono">{metric.label}</span>
+						</li>
+					))}
+				</ul>
+			)
+		}
+
+		<h4 class="modal-section mono">Key Contributions</h4>
+		<ul class="modal-bullets">
+			{
+				job.highlights.map((highlight) => (
+					<li>
+						<strong>{highlight.title}</strong>
+						<span class="muted">: {highlight.body}</span>
+					</li>
+				))
+			}
+		</ul>
+
+		<h4 class="modal-section mono">Stack</h4>
+		<ul class="chips">
+			{job.stack.map((tech) => <li class="chip">{tech}</li>)}
+		</ul>
+	</div>
+</dialog>

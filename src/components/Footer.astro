@@ -1,0 +1,37 @@
+---
+// Closing credit line. Contact details live in the Contact section above, so
+// this stays to a single copyright row.
+import { profile } from '../data/content';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+	<div class="wrap">
+		<p class="mono">
+			<span>© {year} {profile.name}</span>
+			<span class="dot">·</span>
+			<span class="built">Built with HTML, CSS &amp; JavaScript</span>
+		</p>
+	</div>
+</footer>
+
+<style>
+	.footer {
+		border-top: 1px solid var(--border);
+		padding-block: 2.25rem 3.5rem;
+	}
+
+	.footer p {
+		margin: 0;
+		font-size: 0.76rem;
+		color: var(--text-faint);
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+	}
+
+	.built {
+		color: var(--text-muted);
+	}
+</style>

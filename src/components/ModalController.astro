@@ -1,0 +1,41 @@
+---
+// Wires every [data-modal] card to the <dialog> whose id it names.
+// Included once in the layout, so experience and education share one code path.
+---
+
+<script>
+	document.querySelectorAll<HTMLElement>('[data-modal]').forEach((card) => {
+		const dialog = document.getElementById(card.dataset.modal!) as HTMLDialogElement | null;
+		if (!dialog) return;
+
+		// Native showModal() gives us focus trapping, Esc to close, and
+		// background inertness for free.
+		const open = () => {
+			dialog.showModal();
+			document.body.style.overflow = 'hidden';
+		};
+
+		card.addEventListener('click', open);
+
+		// Keyboard parity for the role="button" card.
+		card.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				open();
+			}
+		});
+
+		dialog.querySelector('.modal-close')?.addEventListener('click', () => dialog.close());
+
+		// A click landing on the dialog itself is a click on the backdrop,
+		// since .modal-inner covers the whole visible panel.
+		dialog.addEventListener('click', (e) => {
+			if (e.target === dialog) dialog.close();
+		});
+
+		dialog.addEventListener('close', () => {
+			document.body.style.overflow = '';
+			card.focus();
+		});
+	});
+</script>

@@ -1,0 +1,297 @@
+---
+// Octagonal portrait frame for the opening block.
+//
+// Three layers, stacked back to front:
+//   1. the ticker tag, tucked behind the frame until hover
+//   2. the photo, clipped to an octagon
+//   3. the bezel, an octagon outline that rotates on hover
+//
+// The bezel has to be its own element rather than a border on the photo: a
+// rotation applied to the clipped photo would turn the face along with it.
+
+interface Props {
+	/** Square image in /public. Falls back to an initials plate when null. */
+	src?: string | null;
+	alt?: string;
+	/** Initials for the placeholder. */
+	initials?: string;
+	/** Ticker symbol on the tag that slides out on hover. */
+	symbol?: string;
+	/** Cycled one per hover, in order. */
+	moves?: string[];
+}
+
+const {
+	src = null,
+	alt = '',
+	initials = 'AN',
+	symbol = 'ATHN',
+	// An arc rather than three jokes: a rating, then the listing, then the
+	// demand for it.
+	moves = ['STRONG BUY', 'IPO MAY 2027', 'OVERSUBSCRIBED'],
+} = Astro.props;
+---
+
+<div class="portrait">
+	<span class="tag mono" aria-hidden="true" data-moves={JSON.stringify(moves)}>
+		<span class="tag-symbol">{symbol}</span>
+		<span class="tag-move">▲ {moves[0]}</span>
+	</span>
+
+	<div class="frame">
+		{
+			src ? (
+				<img src={src} alt={alt} width="512" height="512" loading="eager" decoding="async" />
+			) : (
+				<span class="placeholder">
+					<span class="placeholder-initials mono">{initials}</span>
+					<span class="placeholder-note mono">photo pending</span>
+				</span>
+			)
+		}
+	</div>
+
+	<svg class="bezel" viewBox="0 0 100 100" aria-hidden="true">
+		<polygon points="29.3,0 70.7,0 100,29.3 100,70.7 70.7,100 29.3,100 0,70.7 0,29.3"></polygon>
+	</svg>
+</div>
+
+<style>
+	.portrait {
+		--size: clamp(11rem, 23vw, 15.5rem);
+		/* One shape, declared once, so the photo clip and the bezel outline can
+		   never drift out of alignment. */
+		--octagon: polygon(
+			29.3% 0%,
+			70.7% 0%,
+			100% 29.3%,
+			100% 70.7%,
+			70.7% 100%,
+			29.3% 100%,
+			0% 70.7%,
+			0% 29.3%
+		);
+		position: relative;
+		width: var(--size);
+		height: var(--size);
+		flex: none;
+	}
+
+	.frame {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		clip-path: var(--octagon);
+		background: linear-gradient(150deg, var(--bg-panel), var(--bg-raised));
+		transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.frame img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+	}
+
+	/* Stand-in until a real photo arrives. */
+	.placeholder {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		width: 100%;
+		height: 100%;
+		background-image: linear-gradient(
+				color-mix(in srgb, var(--border) 55%, transparent) 1px,
+				transparent 1px
+			),
+			linear-gradient(90deg, color-mix(in srgb, var(--border) 55%, transparent) 1px, transparent 1px);
+		background-size: 1.4rem 1.4rem;
+	}
+
+	.placeholder-initials {
+		font-size: 2.6rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		background: linear-gradient(120deg, var(--accent), var(--accent-2));
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.placeholder-note {
+		font-size: 0.56rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--text-faint);
+	}
+
+	/* The rotating bezel. Slightly larger than the frame so its stroke reads as
+	   a housing around the photo rather than a border on it. */
+	.bezel {
+		position: absolute;
+		inset: -7px;
+		z-index: 3;
+		width: calc(100% + 14px);
+		height: calc(100% + 14px);
+		pointer-events: none;
+		fill: none;
+		stroke: color-mix(in srgb, var(--accent-2) 45%, transparent);
+		stroke-width: 1.1;
+		/* Keeps the outline hairline-thin at any rendered size. */
+		vector-effect: non-scaling-stroke;
+		transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), stroke 0.4s ease,
+			filter 0.4s ease;
+	}
+
+	/* A second, fainter bezel sitting further out, offset so the two never line
+	   up. It turns the other way on hover. */
+	.portrait::after {
+		content: '';
+		position: absolute;
+		inset: -16px;
+		z-index: 1;
+		pointer-events: none;
+		border: 1px solid color-mix(in srgb, var(--accent) 16%, transparent);
+		clip-path: var(--octagon);
+		transform: rotate(22.5deg);
+		transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	/* Machined, not spinny: a few degrees, eased out. */
+	.portrait:hover .bezel {
+		transform: rotate(45deg);
+		stroke: var(--accent-2);
+		filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent-2) 45%, transparent));
+	}
+
+	.portrait:hover::after {
+		transform: rotate(-22.5deg);
+	}
+
+	.portrait:hover .frame {
+		transform: scale(0.985);
+	}
+
+	/* The ticker tag, hidden under the frame and rising clear of its top-right
+	   edge on hover. It sits below the frame in z-order, which is what makes it
+	   read as emerging from behind rather than appearing on top.
+
+	   It travels mostly upward rather than sideways on purpose. Sliding it far
+	   enough right to clear the octagon would push it past the page edge on
+	   narrower screens; going up clears the shape completely with no risk of a
+	   horizontal scrollbar. */
+	.tag {
+		position: absolute;
+		z-index: 1;
+		/* Anchored to the frame's own edges rather than offset by a percentage
+		   of the tag's size, so it clears the photo no matter how long the
+		   label gets. It sits beside the upper-right diagonal, where the
+		   octagon is at its narrowest. */
+		top: 6%;
+		left: calc(100% - 1.2rem);
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+		padding: 0.3rem 0.6rem;
+		white-space: nowrap;
+		border: 1px solid color-mix(in srgb, var(--up) 40%, transparent);
+		border-radius: 5px;
+		background: color-mix(in srgb, var(--bg-raised) 92%, transparent);
+		box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+		opacity: 0;
+		/* Parked left, over the photo's top-right corner and behind the frame. */
+		transform: translateX(-4.5rem);
+		transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
+	}
+
+	.portrait:hover .tag {
+		opacity: 1;
+		/* Slides out to its anchored position, entirely clear of the photo. */
+		transform: translateX(0);
+	}
+
+	.tag-symbol {
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		color: var(--text);
+	}
+
+	.tag-move {
+		font-size: 0.62rem;
+		letter-spacing: 0.08em;
+		color: var(--up);
+	}
+
+	/* No hover on touch, so the tag would never be reachable. Show it parked
+	   just clear of the frame instead. */
+	@media (hover: none) {
+		.tag {
+			opacity: 1;
+			transform: translateX(0);
+		}
+	}
+
+	/* Once the page is narrow there is no room to the right of the frame for the
+	   tag to extend into, so it goes back above the photo instead. */
+	@media (max-width: 1180px) {
+		.tag {
+			top: auto;
+			left: auto;
+			bottom: calc(100% + 20px);
+			right: 4%;
+			transform: translateY(3rem);
+		}
+
+		.portrait:hover .tag {
+			transform: translateY(0);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.bezel,
+		.portrait::after,
+		.frame,
+		.tag {
+			transition: opacity 0.3s ease;
+		}
+
+		/* Hold every layer at its resting angle; only the tag still fades in. */
+		.portrait:hover .bezel,
+		.portrait:hover .frame {
+			transform: none;
+		}
+
+		.portrait:hover::after {
+			transform: rotate(22.5deg);
+		}
+	}
+</style>
+
+<script>
+	// One label per hover, cycling in order. The text is swapped on enter, while
+	// the tag is still hidden behind the frame, so the change is never visible
+	// mid-slide.
+	document.querySelectorAll<HTMLElement>('.portrait').forEach((portrait) => {
+		const tag = portrait.querySelector<HTMLElement>('.tag');
+		const move = portrait.querySelector<HTMLElement>('.tag-move');
+		if (!tag || !move) return;
+
+		let moves: string[] = [];
+		try {
+			moves = JSON.parse(tag.dataset.moves || '[]');
+		} catch {
+			return;
+		}
+
+		if (moves.length < 2) return;
+
+		let i = 0;
+		portrait.addEventListener('pointerenter', () => {
+			i = (i + 1) % moves.length;
+			move.textContent = `▲ ${moves[i]}`;
+		});
+	});
+</script>

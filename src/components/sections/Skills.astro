@@ -1,0 +1,48 @@
+---
+// Grouped skill chips. Kept near the end: it reads as a keyword block rather
+// than something competing with the actual work above it.
+import { skills } from '../../data/content';
+---
+
+<section class="section" id="skills" aria-labelledby="skills-label">
+	<div class="wrap">
+		<h2 class="section-label reveal" id="skills-label">Technical Skills</h2>
+
+		<dl class="skills">
+			{
+				skills.map((group, i) => (
+					<div class="skill-row reveal" data-reveal-delay={i * 70}>
+						<dt class="mono">{group.group}</dt>
+						<dd>
+							<ul class="chips">
+								{group.items.map((item) => (
+									<li class="chip">{item}</li>
+								))}
+							</ul>
+						</dd>
+					</div>
+				))
+			}
+		</dl>
+	</div>
+</section>
+
+<style>
+	.skills {
+		margin: 0;
+		display: grid;
+		gap: 1.85rem;
+	}
+
+	.skill-row dt {
+		font-size: 0.7rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-faint);
+		margin-bottom: 0.75rem;
+	}
+
+	.skill-row dd {
+		margin: 0;
+	}
+</style>

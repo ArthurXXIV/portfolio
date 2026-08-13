@@ -1,0 +1,87 @@
+---
+// Square logo tile. Falls back to a monogram until a real asset is dropped in.
+
+interface Props {
+	src?: string | null;
+	name: string;
+	size?: number;
+	/** Puts a light plate behind the mark, needed for dark logos on this theme. */
+	plate?: boolean;
+	/** Widens the tile for horizontal wordmarks that would otherwise shrink. */
+	wide?: boolean;
+}
+
+const { src = null, name, size = 46, plate = false, wide = false } = Astro.props;
+
+// "Mercer (Marsh McLennan)" -> "M", "University of Southern California" -> "US"
+const monogram = name
+	.replace(/\(.*?\)/g, '')
+	.trim()
+	.split(/\s+/)
+	.filter((w) => !/^(of|and|the|for)$/i.test(w))
+	.slice(0, 2)
+	.map((w) => w[0]?.toUpperCase() ?? '')
+	.join('');
+---
+
+<div
+	class:list={['logo', { 'logo-plate': plate && src, 'logo-wide': wide && src }]}
+	style={`--logo-size:${size}px`}
+	aria-hidden="true"
+>
+	{
+		src ? (
+			<img src={src} alt="" loading="lazy" decoding="async" />
+		) : (
+			<span class="logo-monogram mono">{monogram}</span>
+		)
+	}
+</div>
+
+<style>
+	.logo {
+		flex: none;
+		width: var(--logo-size);
+		height: var(--logo-size);
+		aspect-ratio: 1;
+		border-radius: 10px;
+		overflow: hidden;
+		display: grid;
+		place-items: center;
+		background: var(--bg-raised);
+		border: 1px solid var(--border);
+	}
+
+	.logo img {
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
+		padding: 5px;
+	}
+
+	/* Dark marks need a light ground to stay legible on this theme. */
+	.logo-plate {
+		background: #f4f5f7;
+		border-color: #d8dbe1;
+	}
+
+	/* Horizontal wordmarks stay readable in a wider tile. */
+	.logo-wide {
+		width: calc(var(--logo-size) * 2.6);
+		aspect-ratio: auto;
+	}
+
+	.logo-wide img {
+		padding: 3px;
+	}
+
+	.logo-monogram {
+		font-size: calc(var(--logo-size) * 0.36);
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		background: linear-gradient(120deg, var(--accent), var(--accent-2));
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+</style>

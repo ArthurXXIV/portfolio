@@ -1,0 +1,33 @@
+---
+// Coursework and activity timeline for one school. Wider than the experience
+// modal because the timeline runs in two tilted columns.
+import Logo from '../Logo.astro';
+import Timeline from '../Timeline.astro';
+
+interface Props {
+	school: (typeof import('../../data/content'))['education'][number];
+}
+
+const { school } = Astro.props;
+---
+
+<dialog class="modal modal-wide" id={`edu-modal-${school.id}`} aria-labelledby={`edu-title-${school.id}`}>
+	<div class="modal-inner">
+		<header class="modal-head">
+			<div class="xp-ident">
+				<Logo src={school.logo} name={school.school} size={54} plate={school.logoPlate} />
+				<div>
+					<h3 class="modal-title" id={`edu-title-${school.id}`}>{school.degree}</h3>
+					<p class="modal-sub muted">
+						{school.school} <span class="dot">·</span> {school.dates}
+					</p>
+					<p class="xp-loc mono muted">GPA {school.gpa}</p>
+				</div>
+			</div>
+
+			<button class="modal-close" type="button" aria-label="Close timeline">✕</button>
+		</header>
+
+		<Timeline entries={school.timeline} />
+	</div>
+</dialog>

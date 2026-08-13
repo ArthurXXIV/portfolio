@@ -1,0 +1,131 @@
+---
+// Stylized ball droid used as the live status marker in the opening block.
+// Original simplified illustration, not a licensed likeness.
+//
+// Built as two independent groups: the ball rocks, the head stays upright and
+// tilts on its own. That separation is the whole character of the droid, so it
+// cannot be drawn as one rigid shape.
+
+interface Props {
+	label?: string;
+	size?: number;
+}
+
+const { label = 'Available', size = 24 } = Astro.props;
+---
+
+<svg
+	class="bb8"
+	width={size}
+	height={size}
+	viewBox="0 0 32 32"
+	fill="none"
+	role="img"
+	aria-label={`${label} marker`}
+>
+	<g class="bb8-ball">
+		<circle cx="16" cy="21.5" r="9" fill="#eef1f6" stroke="#9aa4bd" stroke-width="0.8"></circle>
+
+		<!-- Body rings. Clipped to the ball so they curve off its edge. -->
+		<clipPath id="bb8-ball-clip">
+			<circle cx="16" cy="21.5" r="8.6"></circle>
+		</clipPath>
+
+		<g clip-path="url(#bb8-ball-clip)">
+			<circle cx="16" cy="21.5" r="4.4" fill="none" stroke="var(--bb8-trim)" stroke-width="1.7"
+			></circle>
+			<circle cx="16" cy="21.5" r="1.5" fill="var(--bb8-trim)"></circle>
+			<circle cx="7.2" cy="18.6" r="2.6" fill="none" stroke="var(--bb8-trim)" stroke-width="1.5"
+			></circle>
+			<circle cx="24.8" cy="18.6" r="2.6" fill="none" stroke="var(--bb8-trim)" stroke-width="1.5"
+			></circle>
+			<path d="M6 27.5h20" stroke="#9aa4bd" stroke-width="0.7" opacity="0.5"></path>
+		</g>
+	</g>
+
+	<g class="bb8-head">
+		<!-- Antennae, drawn before the dome so their feet tuck under it. -->
+		<path d="M13.8 7.6V4.2M18.6 7.9V5.6" stroke="#9aa4bd" stroke-width="0.9" stroke-linecap="round"
+		></path>
+
+		<path d="M10.2 12.4a5.8 5.8 0 0 1 11.6 0z" fill="#f4f6fa" stroke="#9aa4bd" stroke-width="0.8"
+		></path>
+
+		<!-- Main lens and the smaller sensor beside it. -->
+		<circle class="bb8-lens" cx="17.6" cy="10.2" r="1.9" fill="#1b2233" stroke="var(--bb8-trim)" stroke-width="0.8"></circle>
+		<circle class="bb8-glint" cx="17.6" cy="10.2" r="0.6" fill="var(--accent-2)"></circle>
+		<circle cx="13.9" cy="10.6" r="0.95" fill="#3b4150" opacity="0.7"></circle>
+	</g>
+</svg>
+
+<style>
+	.bb8 {
+		/* Orange trim, the one colour that makes the droid legible at this size. */
+		--bb8-trim: #ff9b3d;
+		flex: none;
+		overflow: visible;
+	}
+
+	/* Every animated part rotates about its own centre rather than the SVG
+	   origin, which is what transform-box: fill-box buys here. */
+	.bb8-ball,
+	.bb8-head {
+		transform-box: fill-box;
+		transform-origin: center;
+	}
+
+	/* The ball rocks as though it were rolling in place. */
+	.bb8-ball {
+		animation: bb8-roll 4.2s ease-in-out infinite;
+	}
+
+	/* The head lags behind the ball and tilts less far, so it reads as balanced
+	   on top rather than glued to it. */
+	.bb8-head {
+		transform-origin: bottom center;
+		animation: bb8-tilt 4.2s ease-in-out 0.25s infinite;
+	}
+
+	.bb8-glint {
+		animation: bb8-blink 6s ease-in-out infinite;
+	}
+
+	@keyframes bb8-roll {
+		0%,
+		100% {
+			transform: rotate(-9deg);
+		}
+		50% {
+			transform: rotate(9deg);
+		}
+	}
+
+	@keyframes bb8-tilt {
+		0%,
+		100% {
+			transform: rotate(4deg) translateX(0.5px);
+		}
+		50% {
+			transform: rotate(-4deg) translateX(-0.5px);
+		}
+	}
+
+	@keyframes bb8-blink {
+		0%,
+		90%,
+		100% {
+			opacity: 1;
+		}
+		94% {
+			opacity: 0.1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.bb8-ball,
+		.bb8-head,
+		.bb8-glint {
+			animation: none;
+		}
+	}
+</style>

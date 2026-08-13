@@ -1,0 +1,358 @@
+---
+// A hand of face-down cards fanned across the bottom of a stage. Every card
+// shows the same X-wing backing, so picking one is a genuine choice rather than
+// a menu. The picked card lifts out, centres itself, and flips to its detail.
+import { about } from '../data/content';
+
+const cards = about.cards;
+const n = cards.length;
+
+// Fan geometry, computed at build time so the CSS stays declarative.
+// Each card pivots on its bottom edge; cards further from the middle also sit
+// slightly lower, which is what gives the hand its arc.
+const layout = cards.map((card, i) => {
+	const offset = i - (n - 1) / 2;
+	return {
+		card,
+		// 12 degrees per card gives a 108 degree spread across ten cards. Taller
+		// cards swing wider, so this is as far as the fan can open before the
+		// outer corners run past the section edge.
+		rotate: Number((offset * 12).toFixed(2)),
+		// Drop increases by a fixed step per card out from the middle. A uniform
+		// ramp keeps the spacing even instead of bunching the outer cards the
+		// way a circular arc did.
+		lift: Number((Math.abs(offset) * 26).toFixed(1)),
+		index: i,
+	};
+});
+---
+
+<div class="stage" id="deck-stage">
+	<p class="stage-hint mono">Pick a card. Five on what I do, five on what I like.</p>
+
+	{
+		layout.map(({ card, rotate, lift, index }) => (
+			<button
+				class="card"
+				type="button"
+				aria-expanded="false"
+				aria-label={`Reveal card ${index + 1}: ${card.title}`}
+				style={`--rot:${rotate}deg; --lift:${lift}px; --i:${index};`}
+				data-group={card.group === 'What I do' ? 'do' : 'like'}
+			>
+				<span class="card-face card-cover">
+					<span class="card-group mono">{card.group}</span>
+					<span class="card-pip mono">{index + 1}</span>
+				</span>
+
+				<span class="card-face card-detail">
+					<span class="card-group mono">{card.group}</span>
+					<span class="card-title">{card.title}</span>
+					<span class="card-body">{card.body}</span>
+					<span class="card-close mono">Back to hand</span>
+				</span>
+			</button>
+		))
+	}
+</div>
+
+<style>
+	/* The table the hand is dealt onto. */
+	.stage {
+		position: relative;
+		margin-top: 2.5rem;
+		/* Just tall enough to hold an opened card. The hand sits at the bottom,
+		   so any extra here reads as dead space above the fan. */
+		min-height: 30rem;
+		border: 1px solid var(--border);
+		border-radius: 16px;
+		overflow: hidden;
+		background: radial-gradient(
+			110% 70% at 50% 110%,
+			color-mix(in srgb, var(--accent) 8%, transparent),
+			transparent 68%
+		);
+	}
+
+	.stage-hint {
+		position: absolute;
+		top: 2rem;
+		left: 50%;
+		transform: translateX(-50%);
+		width: max-content;
+		max-width: 90%;
+		text-align: center;
+		font-size: 0.7rem;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--text-faint);
+		transition: opacity 0.3s ease;
+	}
+
+	.stage.has-open .stage-hint {
+		opacity: 0;
+	}
+
+	/* Cards ---------------------------------------------------------------- */
+
+	.card {
+		position: absolute;
+		left: 50%;
+		bottom: -5rem;
+		width: 15rem;
+		height: 25rem;
+		padding: 0;
+		border: 0;
+		background: none;
+		font: inherit;
+		cursor: pointer;
+		/* Pivot on the bottom edge so the fan opens like a real hand. */
+		transform-origin: bottom center;
+		transform: translateX(-50%) rotate(var(--rot)) translateY(var(--lift));
+		transform-style: preserve-3d;
+		transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease,
+			width 0.55s cubic-bezier(0.22, 1, 0.36, 1), height 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+			bottom 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+		z-index: calc(10 + var(--i));
+	}
+
+	.card:hover,
+	.card:focus-visible {
+		transform: translateX(-50%) rotate(var(--rot)) translateY(calc(var(--lift) - 3rem));
+	}
+
+	/* The picked card leaves the hand, centres itself, and flips over. */
+	/* Same 0.6 width-to-height ratio as a card in the hand, just larger. */
+	.card[aria-expanded='true'],
+	.card[aria-expanded='true']:hover {
+		width: 18rem;
+		height: 30rem;
+		bottom: 50%;
+		z-index: 60;
+		transform: translate(-50%, 50%) rotate(0deg) rotateY(180deg);
+	}
+
+	/* Everything else drops away while a card is open. */
+	.stage.has-open .card[aria-expanded='false'] {
+		opacity: 0.2;
+		transform: translateX(-50%) rotate(var(--rot)) translateY(calc(var(--lift) + 4.5rem));
+		pointer-events: none;
+	}
+
+	.card-face {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.55rem;
+		padding: 1.2rem 1.25rem;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 22px;
+		box-shadow: 0 18px 38px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+		backface-visibility: hidden;
+		-webkit-backface-visibility: hidden;
+		text-align: left;
+		overflow: hidden;
+	}
+
+	/* Face-down side: the X-wing backing every card shares, tinted by deck so
+	   the two groups stay tellable apart while overlapped in the fan. */
+	.card-cover {
+		justify-content: space-between;
+		background-color: #0a1320;
+		background-size: cover;
+		background-position: center;
+	}
+
+	.card[data-group='do'] .card-cover {
+		background-image: linear-gradient(
+				170deg,
+				color-mix(in srgb, var(--accent) 42%, transparent),
+				rgba(5, 7, 13, 0.86)
+			),
+			url('/logos/xwing.jpg');
+		border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+	}
+
+	.card[data-group='like'] .card-cover {
+		background-image: linear-gradient(
+				170deg,
+				color-mix(in srgb, var(--accent-2) 42%, transparent),
+				rgba(5, 7, 13, 0.86)
+			),
+			url('/logos/xwing.jpg');
+		border-color: color-mix(in srgb, var(--accent-2) 45%, transparent);
+	}
+
+	/* Colour bar down the visible edge of each card in the fan. */
+	.card-cover::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 5px;
+		background: var(--accent);
+	}
+
+	.card[data-group='like'] .card-cover::before {
+		background: var(--accent-2);
+	}
+
+	.card[data-group='like'] .card-group {
+		color: var(--accent-2);
+	}
+
+	.card-detail {
+		transform: rotateY(180deg);
+		padding: 1.9rem 2rem;
+		border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+		background: linear-gradient(165deg, var(--bg-panel), var(--bg-raised));
+	}
+
+	.card:hover .card-cover {
+		border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+		box-shadow: 0 22px 46px rgba(0, 0, 0, 0.65),
+			0 0 26px color-mix(in srgb, var(--accent) 22%, transparent);
+	}
+
+	.card-group {
+		font-size: 0.62rem;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--accent);
+	}
+
+	.card-title {
+		font-size: 1.5rem;
+		font-weight: 600;
+		line-height: 1.25;
+		color: var(--text);
+	}
+
+	.card-body {
+		font-size: 0.98rem;
+		line-height: 1.65;
+		color: var(--text-muted);
+		overflow-y: auto;
+	}
+
+	/* Card number in the corner, like a playing card index. */
+	.card-pip {
+		margin-top: auto;
+		align-self: flex-end;
+		font-size: 0.8rem;
+		color: var(--text-muted);
+	}
+
+	.card-close {
+		margin-top: auto;
+		align-self: flex-start;
+		font-size: 0.64rem;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--accent);
+		border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+		border-radius: 999px;
+		padding: 0.3rem 0.7rem;
+	}
+
+	/* Narrow screens cannot hold a fan, so fall back to a stacked list. */
+	@media (max-width: 860px) {
+		.stage {
+			min-height: 0;
+			padding: 0;
+			display: grid;
+			gap: 0.75rem;
+			background: none;
+			border: 0;
+			border-radius: 0;
+			margin-top: 2rem;
+		}
+
+		.stage-hint {
+			position: static;
+			transform: none;
+			text-align: left;
+			max-width: none;
+			margin: 0 0 0.5rem;
+		}
+
+		.card,
+		.card:hover,
+		.card[aria-expanded='true'],
+		.card[aria-expanded='true']:hover,
+		.stage.has-open .card[aria-expanded='false'] {
+			position: relative;
+			left: auto;
+			bottom: auto;
+			width: 100%;
+			height: auto;
+			min-height: 6rem;
+			opacity: 1;
+			transform: none;
+			pointer-events: auto;
+		}
+
+		.card-face {
+			position: relative;
+			inset: auto;
+		}
+
+		.card-detail {
+			display: none;
+			transform: none;
+		}
+
+		.card[aria-expanded='true'] .card-cover {
+			display: none;
+		}
+
+		.card[aria-expanded='true'] .card-detail {
+			display: flex;
+		}
+
+		.card-title {
+			font-size: 1.15rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.card {
+			transition: none;
+		}
+	}
+</style>
+
+<script>
+	const stage = document.getElementById('deck-stage');
+	const deckCards = document.querySelectorAll<HTMLButtonElement>('#deck-stage .card');
+
+	function closeAll() {
+		deckCards.forEach((c) => c.setAttribute('aria-expanded', 'false'));
+		stage?.classList.remove('has-open');
+	}
+
+	deckCards.forEach((card) => {
+		card.addEventListener('click', () => {
+			const isOpen = card.getAttribute('aria-expanded') === 'true';
+			closeAll();
+
+			// Clicking the open card returns it to the hand.
+			if (!isOpen) {
+				card.setAttribute('aria-expanded', 'true');
+				stage?.classList.add('has-open');
+			}
+		});
+	});
+
+	// Clicking the empty table also returns the card.
+	stage?.addEventListener('click', (e) => {
+		if (e.target === stage) closeAll();
+	});
+
+	// Esc returns the open card to the hand.
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape' && stage?.classList.contains('has-open')) closeAll();
+	});
+</script>

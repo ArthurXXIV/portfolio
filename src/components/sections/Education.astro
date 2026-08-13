@@ -1,0 +1,39 @@
+---
+// Education summary cards. Each opens an EducationModal holding the coursework
+// timeline, which keeps these cards a uniform height regardless of entry count.
+import Logo from '../Logo.astro';
+import { education } from '../../data/content';
+---
+
+<section class="section" id="education" aria-labelledby="education-label">
+	<div class="wrap">
+		<h2 class="section-label reveal" id="education-label">Education</h2>
+		<p class="section-hint reveal">Click a card to see coursework and activities</p>
+
+		{
+			education.map((school, i) => (
+				<article
+					class="xp xp-edu reveal"
+					data-reveal-delay={i * 90}
+					data-modal={`edu-modal-${school.id}`}
+					tabindex="0"
+					role="button"
+					aria-haspopup="dialog"
+					aria-label={`Open coursework timeline for ${school.degree} at ${school.school}`}
+				>
+					<div class="xp-top">
+						<div class="xp-ident">
+							<Logo src={school.logo} name={school.school} plate={school.logoPlate} />
+							<div>
+								<h3 class="xp-company">{school.school}</h3>
+								<p class="xp-role">{school.degree}</p>
+								<p class="xp-loc mono muted">GPA {school.gpa}</p>
+							</div>
+						</div>
+						<span class="xp-date mono">{school.dates}</span>
+					</div>
+				</article>
+			))
+		}
+	</div>
+</section>

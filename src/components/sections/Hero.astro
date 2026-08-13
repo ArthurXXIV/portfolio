@@ -1,0 +1,496 @@
+---
+// Landing block: name, tagline, availability, and the primary action row.
+import BB8 from '../BB8.astro';
+import Icon from '../Icon.astro';
+import Portrait from '../Portrait.astro';
+import { about, profile } from '../../data/content';
+---
+
+<header class="hero" id="top">
+	<div class="wrap hero-inner">
+		<div class="hero-copy">
+			<p class="eyebrow mono">Hi, I'm</p>
+			<h1>{profile.name}</h1>
+			{/* The row exists to hold the perspective and the two blades. The plate
+			    lives on the <p> and the gradient on the inner <span>: putting both on
+			    one element would make background-clip:text clip the plate away. */}
+			<div class="tagline-row" id="tagline-row">
+				<span class="saber" aria-hidden="true"></span>
+				<p class="tagline mono"><span class="tagline-text">{profile.tagline}</span></p>
+				<span class="saber" aria-hidden="true"></span>
+			</div>
+
+			{/* A terminal readout, matching the ticker language the rest of the site
+			    already speaks. Labels are dim and values are full contrast, so the
+			    facts stay scannable without borrowing the job title's emphasis. */}
+			<dl class="readout">
+				{
+					profile.availability.map((item, i) => (
+						<>
+							<dt class="mono">{item.label}</dt>
+							<dd>
+								{i === 0 && <BB8 size={24} label="Available" />}
+								{item.value}
+							</dd>
+						</>
+					))
+				}
+			</dl>
+
+			<p class="blurb">{profile.blurb}</p>
+
+			<nav class="actions" aria-label="Primary actions">
+				<a class="btn btn-primary" href="#projects">View Projects</a>
+
+				<span class="icon-links">
+					<a class="icon-btn" href={profile.links.github} target="_blank" rel="me noopener" title="GitHub">
+						<Icon name="github" />
+						<span class="visually-hidden">GitHub</span>
+					</a>
+					<a class="icon-btn" href={profile.links.linkedin} target="_blank" rel="me noopener" title="LinkedIn">
+						<Icon name="linkedin" />
+						<span class="visually-hidden">LinkedIn</span>
+					</a>
+					<a class="icon-btn" href={profile.links.kaggle} target="_blank" rel="me noopener" title="Kaggle">
+						<Icon name="kaggle" />
+						<span class="visually-hidden">Kaggle</span>
+					</a>
+					<a class="icon-btn" href={profile.resume} title="Resume">
+						<Icon name="resume" />
+						<span class="visually-hidden">Resume</span>
+					</a>
+				</span>
+			</nav>
+
+			<ul class="hero-stats">
+				{
+					about.stats.map((stat) => (
+						<li>
+							<span class="hero-stat-value mono">{stat.value}</span>
+							<span class="hero-stat-label mono">{stat.label}</span>
+						</li>
+					))
+				}
+			</ul>
+		</div>
+
+		{/* Placeholder until a photo arrives: pass src to swap it in. */}
+		<Portrait initials="AN" symbol="ATHN" alt={`Portrait of ${profile.name}`} />
+	</div>
+</header>
+
+<style>
+	.hero {
+		min-height: min(88vh, 44rem);
+		display: flex;
+		align-items: center;
+		padding-block: clamp(3rem, 10vw, 6rem);
+	}
+
+	/* Two columns on wide screens: copy on the left so the name is read first,
+	   portrait on the right filling what used to be an empty third. */
+	.hero-inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: clamp(1.5rem, 5vw, 4rem);
+	}
+
+	.hero-copy {
+		min-width: 0;
+	}
+
+	/* Children fade up in sequence on load. */
+	.hero-copy > * {
+		opacity: 0;
+		transform: translateY(20px);
+		animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+	}
+
+	.hero-copy > *:nth-child(1) {
+		animation-delay: 0.05s;
+	}
+	.hero-copy > *:nth-child(2) {
+		animation-delay: 0.15s;
+	}
+	.hero-copy > *:nth-child(3) {
+		animation-delay: 0.25s;
+	}
+	.hero-copy > *:nth-child(4) {
+		animation-delay: 0.35s;
+	}
+	.hero-copy > *:nth-child(5) {
+		animation-delay: 0.45s;
+	}
+	.hero-copy > *:nth-child(6) {
+		animation-delay: 0.55s;
+	}
+	.hero-copy > *:nth-child(7) {
+		animation-delay: 0.65s;
+	}
+
+	@keyframes rise {
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	.eyebrow {
+		margin: 0 0 0.6rem;
+		font-size: 0.76rem;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--accent);
+	}
+
+	.hero h1 {
+		font-size: clamp(2.5rem, 8vw, 4.5rem);
+		letter-spacing: -0.035em;
+		background: linear-gradient(100deg, var(--text) 25%, var(--accent) 48%, var(--accent-2) 58%, var(--text) 82%);
+		background-size: 250% 100%;
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		/* Must re-declare `rise`, since this rule overrides the shared .hero-inner > * animation
+		   and dropping it would leave the heading stuck at opacity 0. */
+		animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards, shimmer 8s ease-in-out 1s infinite;
+	}
+
+	@keyframes shimmer {
+		0%,
+		100% {
+			background-position: 0% 50%;
+		}
+		50% {
+			background-position: 100% 50%;
+		}
+	}
+
+	/* The role reads as a highlighted label rather than body text. The plate is
+	   on this element; the shifting gradient is on .tagline-text inside it. */
+	/* Perspective has to live here, one level up: the CSS `perspective` property
+	   only affects an element's DIRECT children, so putting it on .tagline would
+	   do nothing for .tagline's own tilt. */
+	.tagline-row {
+		/* Blue and green already exist as theme accents; the other three are
+		   local to this block, so they stay out of the global palette. */
+		--saber-purple: #b072ff;
+		--saber-green: #8ef5d0;
+		--saber-blue: #4db8ff;
+		--saber-orange: #ffab4d;
+		--saber-red: #ff5c5c;
+		/* The blade colour for the current hover, rotated by the script below. */
+		--saber-now: var(--saber-green);
+		/* Written by the pointermove handler, in the range -1 to 1. */
+		--px: 0;
+		--py: 0;
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		width: max-content;
+		margin: 0.95rem 0 0;
+		perspective: 500px;
+	}
+
+	/* Two blades that ignite out of nothing on hover. Kept to 3px so they read
+	   as a detail rather than a costume. */
+	.saber {
+		width: 3px;
+		height: 0;
+		border-radius: 999px;
+		background: var(--saber-now);
+		box-shadow: 0 0 10px var(--saber-now), 0 0 22px color-mix(in srgb, var(--saber-now) 55%, transparent);
+		transition: height 0.26s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease,
+			box-shadow 0.3s ease;
+	}
+
+	.tagline-row:hover .saber {
+		height: 2rem;
+	}
+
+	/* The second blade ignites a beat after the first. */
+	.tagline-row:hover .saber:last-child {
+		transition-delay: 0.07s;
+	}
+
+	.tagline {
+		position: relative;
+		display: inline-block;
+		padding: 0.42rem 0.9rem;
+		font-size: 0.84rem;
+		font-weight: 600;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--accent-2) 10%, rgba(255, 255, 255, 0.04));
+		border: 1px solid color-mix(in srgb, var(--accent-2) 38%, transparent);
+		backdrop-filter: blur(12px);
+		box-shadow: 0 0 26px color-mix(in srgb, var(--accent-2) 16%, transparent);
+		overflow: hidden;
+		cursor: default;
+		transform-style: preserve-3d;
+		/* Short and snappy: a slow press reads as a shrink rather than a push. */
+		transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease,
+			box-shadow 0.25s ease;
+	}
+
+	/* Deliberately the same two accents and the same 100deg angle as the name
+	   above, so the two lines read as a matched pair rather than as two separate
+	   effects competing. The full five-colour saber range lives on the blades
+	   instead, where it is opt-in: a recruiter skimming never sees a rainbow,
+	   and anyone who hovers gets the whole palette. */
+	.tagline-text {
+		background: linear-gradient(
+			100deg,
+			var(--accent-2) 20%,
+			var(--accent) 45%,
+			var(--accent-3) 55%,
+			var(--accent-2) 80%
+		);
+		background-size: 260% 100%;
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+		/* Matches the heading's 8s loop so they drift together. */
+		animation: saber 8s ease-in-out 1s infinite;
+	}
+
+	@keyframes saber {
+		0%,
+		100% {
+			background-position: 0% 50%;
+		}
+		50% {
+			background-position: 100% 50%;
+		}
+	}
+
+	/* Presses inward on hover while a sheen sweeps across, so the label reacts
+	   to the pointer the way the project tickers do. */
+	.tagline::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		pointer-events: none;
+		background: linear-gradient(
+			105deg,
+			transparent 35%,
+			rgba(255, 255, 255, 0.32) 50%,
+			transparent 65%
+		);
+		transform: translateX(-120%);
+		transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	/* Pushed into the page, and specifically pushed in WHERE THE CURSOR IS. The
+	   whole pill sinks on translateZ, then tilts so the edge nearest the pointer
+	   dips further away than the far edge. The signs are what sell it: pointer
+	   at the top tilts the top backward, pointer at the left tilts the left
+	   backward. A uniform scale cannot do this, which is why the earlier version
+	   read as a shrink instead of a press. */
+	.tagline-row:hover .tagline {
+		transform: translateZ(-22px) rotateX(calc(var(--py) * -11deg))
+			rotateY(calc(var(--px) * 11deg));
+		border-color: var(--saber-now);
+		box-shadow: 0 0 10px color-mix(in srgb, var(--saber-now) 22%, transparent),
+			inset 0 4px 10px rgba(0, 0, 0, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+	}
+
+	/* Bottoms out on click. */
+	.tagline-row:active .tagline {
+		transform: translateZ(-34px) rotateX(calc(var(--py) * -13deg))
+			rotateY(calc(var(--px) * 13deg));
+		box-shadow: inset 0 5px 12px rgba(0, 0, 0, 0.72);
+	}
+
+	.tagline-row:hover .tagline::after {
+		transform: translateX(120%);
+	}
+
+	/* Availability pills: the first thing a US recruiter screens on. */
+	/* Two columns: dim labels, bright values. The whole block hangs off a single
+	   vertical rule instead of sitting in a box, which keeps it grouped without
+	   adding a fourth bordered rectangle to the opening. */
+	.readout {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		align-items: baseline;
+		column-gap: 1.15rem;
+		row-gap: 0.5rem;
+		width: max-content;
+		max-width: 100%;
+		margin: 1.5rem 0 0;
+		padding: 0.15rem 0 0.15rem 1.1rem;
+		border-left: 2px solid;
+		/* Fades out downward so the rule reads as a terminal gutter rather than
+		   a hard border. */
+		border-image: linear-gradient(
+				180deg,
+				var(--accent-2),
+				color-mix(in srgb, var(--accent-2) 30%, transparent) 55%,
+				transparent
+			)
+			1;
+	}
+
+	.readout dt {
+		font-size: 0.62rem;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--text-faint);
+		white-space: nowrap;
+	}
+
+	/* Full text contrast: these were unreadable when they were set faint. */
+	.readout dd {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin: 0;
+		font-size: 0.88rem;
+		color: var(--text);
+	}
+
+	.readout dd:first-of-type {
+		color: var(--accent-2);
+	}
+
+	/* The actual pitch, so it gets more room than it had and a measure that
+	   breaks near 70 characters rather than running to 85. */
+	.blurb {
+		margin: 1.9rem 0 0;
+		font-size: 1.12rem;
+		line-height: 1.65;
+		color: var(--text-muted);
+		max-width: 40rem;
+	}
+
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.6rem;
+		margin-top: 2.2rem;
+	}
+
+	.hero-stats {
+		list-style: none;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+		gap: 0.9rem;
+		margin: 2.6rem 0 0;
+		padding: 0;
+		max-width: 40rem;
+	}
+
+	.hero-stats li {
+		border: 1px solid var(--border);
+		border-radius: 10px;
+		padding: 1rem 1.05rem;
+		background: color-mix(in srgb, var(--bg-panel) 70%, transparent);
+		backdrop-filter: blur(6px);
+		transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+	}
+
+	.hero-stats li:hover {
+		border-color: var(--accent);
+		transform: translateY(-2px);
+		box-shadow: 0 0 22px color-mix(in srgb, var(--accent) 14%, transparent);
+	}
+
+	.hero-stat-value {
+		display: block;
+		font-size: 1.5rem;
+		font-weight: 600;
+		color: var(--accent);
+		line-height: 1.1;
+	}
+
+	.hero-stat-label {
+		display: block;
+		margin-top: 0.3rem;
+		font-size: 0.64rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--text-faint);
+	}
+
+	/* Below two columns the portrait goes above the copy, since a face is a
+	   better first impression on a phone than a wall of text. */
+	@media (max-width: 860px) {
+		.hero-inner {
+			flex-direction: column-reverse;
+			align-items: flex-start;
+			gap: 2rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero-copy > *,
+		.hero h1 {
+			opacity: 1;
+			transform: none;
+			animation: none;
+		}
+
+		/* Freeze the gradient mid-sweep rather than leaving it unpainted. */
+		.tagline-text {
+			animation: none;
+			background-position: 50% 50%;
+		}
+
+		.tagline,
+		.tagline::after,
+		.tagline-row:hover .tagline,
+		.tagline-row:active .tagline,
+		.saber {
+			transition: none;
+			transform: none;
+		}
+	}
+</style>
+
+<script>
+	// The tilt needs the pointer's position relative to the pill, which CSS
+	// cannot know on its own. Fine pointers only: on touch there is no hover
+	// state to drive, and the blades ignite from the CSS :hover regardless.
+	const row = document.getElementById('tagline-row');
+
+	if (row && window.matchMedia('(pointer: fine)').matches) {
+		const SABERS = ['--saber-green', '--saber-blue', '--saber-purple', '--saber-orange', '--saber-red'];
+		let saberIndex = 0;
+		let frame = 0;
+
+		// A different blade colour every time the pointer arrives.
+		row.addEventListener('pointerenter', () => {
+			row.style.setProperty('--saber-now', `var(${SABERS[saberIndex]})`);
+			saberIndex = (saberIndex + 1) % SABERS.length;
+		});
+
+		// Throttled to one write per animation frame, as pointermove fires far
+		// faster than the screen refreshes.
+		row.addEventListener(
+			'pointermove',
+			(e) => {
+				if (frame) return;
+				frame = requestAnimationFrame(() => {
+					frame = 0;
+					const box = row.getBoundingClientRect();
+					// Normalised to -1 (left/top) through 1 (right/bottom).
+					row.style.setProperty('--px', String(((e.clientX - box.left) / box.width) * 2 - 1));
+					row.style.setProperty('--py', String(((e.clientY - box.top) / box.height) * 2 - 1));
+				});
+			},
+			{ passive: true }
+		);
+
+		// Settle back to flat so the pill does not stay tilted after the pointer
+		// leaves mid-move.
+		row.addEventListener('pointerleave', () => {
+			row.style.setProperty('--px', '0');
+			row.style.setProperty('--py', '0');
+		});
+	}
+</script>

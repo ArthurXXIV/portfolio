@@ -1,0 +1,39 @@
+---
+// The single page. This file only decides WHAT appears and in WHAT ORDER.
+// All markup, styling, and behaviour lives in the imported components,
+// and all copy lives in src/data/content.ts.
+import Layout from '../layouts/Layout.astro';
+
+import Hero from '../components/sections/Hero.astro';
+import About from '../components/sections/About.astro';
+import Experience from '../components/sections/Experience.astro';
+import Projects from '../components/sections/Projects.astro';
+import Education from '../components/sections/Education.astro';
+import Skills from '../components/sections/Skills.astro';
+import Contact from '../components/sections/Contact.astro';
+import Footer from '../components/Footer.astro';
+
+import ExperienceModal from '../components/modals/ExperienceModal.astro';
+import EducationModal from '../components/modals/EducationModal.astro';
+
+import { experience, education } from '../data/content';
+---
+
+<Layout>
+	<Hero />
+
+	<main id="main">
+		<Experience />
+		<Projects />
+		<Education />
+		<Skills />
+		<About />
+		<Contact />
+	</main>
+
+	{/* Dialogs live outside <main> so they sit at the top of the stacking order. */}
+	{experience.map((job) => <ExperienceModal job={job} />)}
+	{education.map((school) => <EducationModal school={school} />)}
+
+	<Footer />
+</Layout>

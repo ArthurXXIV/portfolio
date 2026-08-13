@@ -1,0 +1,57 @@
+---
+// Experience summary cards. Each one opens its matching ExperienceModal via
+// the shared data-modal wiring in ModalController.astro.
+import Droid from '../Droid.astro';
+import Logo from '../Logo.astro';
+import { experience } from '../../data/content';
+
+const CHIPS_ON_CARD = 5;
+---
+
+<section class="section" id="experience" aria-labelledby="experience-label">
+	<div class="wrap">
+		<h2 class="section-label reveal" id="experience-label">Experience</h2>
+		<p class="section-hint reveal">Click a card for the full breakdown</p>
+
+		{
+			experience.map((job, i) => (
+				<article
+					class="xp reveal"
+					data-reveal-delay={i * 90}
+					data-modal={`xp-modal-${job.id}`}
+					tabindex="0"
+					role="button"
+					aria-haspopup="dialog"
+					aria-label={`Open details for ${job.role} at ${job.company}`}
+				>
+					<div class="xp-top">
+						<div class="xp-ident">
+							<Logo src={job.logo} name={job.company} plate={job.logoPlate} />
+							<div>
+								<div class="xp-company-row">
+									<h3 class="xp-company">{job.company}</h3>
+									{job.featured && <Droid label="Featured" />}
+								</div>
+								<p class="xp-role">{job.role}</p>
+								<p class="xp-loc mono muted">{job.location}</p>
+							</div>
+						</div>
+						<span class="xp-date mono">{job.dates}</span>
+					</div>
+
+					<p class="xp-overview muted">{job.overview}</p>
+
+					<ul class="chips xp-stack">
+						{job.stack.slice(0, CHIPS_ON_CARD).map((tech) => (
+							<li class="chip">{tech}</li>
+						))}
+					</ul>
+
+					<span class="xp-cue mono" aria-hidden="true">
+						View details <span class="xp-cue-arrow">→</span>
+					</span>
+				</article>
+			))
+		}
+	</div>
+</section>

@@ -1,0 +1,319 @@
+---
+import { profile, sections } from '../data/content';
+
+const initials = profile.name
+	.split(' ')
+	.map((p) => p[0])
+	.join('');
+---
+
+<header class="nav" id="nav">
+	<div class="nav-inner">
+		<a class="brand mono" href="#top" aria-label="Back to top">{initials}</a>
+
+		<nav class="nav-links" aria-label="Sections">
+			{
+				sections.map((s) => (
+					<a href={`#${s.id}`} data-nav={s.id}>
+						{s.label}
+					</a>
+				))
+			}
+		</nav>
+
+		<div class="nav-actions">
+			<a class="nav-resume" href={profile.resume}>Resume</a>
+
+			{/* aria-pressed carries the state, so the button needs no visible label.
+			    Both icons ship and CSS shows whichever matches the active theme. */}
+			<button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">
+				<span class="visually-hidden">Toggle dark and light mode</span>
+
+				<svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+					<circle cx="12" cy="12" r="4.2"></circle>
+					<path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.3 5.3l1.9 1.9M16.8 16.8l1.9 1.9M18.7 5.3l-1.9 1.9M7.2 16.8l-1.9 1.9"
+					></path>
+				</svg>
+
+				<svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+					<path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2Z"></path>
+				</svg>
+			</button>
+		</div>
+	</div>
+</header>
+
+<style>
+	.nav {
+		position: sticky;
+		top: 0;
+		z-index: 50;
+		border-bottom: 1px solid transparent;
+		background: transparent;
+		transition: background 0.3s ease, border-color 0.3s ease, backdrop-filter 0.3s ease;
+	}
+
+	/* Solidifies once the page scrolls, so the hero stays clean. */
+	.nav.stuck {
+		background: color-mix(in srgb, var(--bg) 82%, transparent);
+		backdrop-filter: blur(12px);
+		border-bottom-color: var(--border);
+	}
+
+	.nav-inner {
+		max-width: var(--maxw);
+		margin: 0 auto;
+		padding: 0.75rem 1.5rem;
+		display: flex;
+		align-items: center;
+		gap: 1.25rem;
+	}
+
+	.brand {
+		font-weight: 700;
+		font-size: 0.9rem;
+		letter-spacing: 0.08em;
+		text-decoration: none;
+		padding: 0.3rem 0.5rem;
+		border: 1px solid var(--border-strong);
+		border-radius: 6px;
+		flex: none;
+		background: linear-gradient(120deg, var(--accent), var(--accent-2));
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.nav-links {
+		display: flex;
+		gap: 0.25rem;
+		margin-inline: auto;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+
+	.nav-links::-webkit-scrollbar {
+		display: none;
+	}
+
+	.nav-links a {
+		position: relative;
+		padding: 0.4rem 0.7rem;
+		font-size: 0.86rem;
+		text-decoration: none;
+		color: var(--text-muted);
+		border-radius: 6px;
+		white-space: nowrap;
+		transition: color 0.2s ease, background 0.2s ease;
+	}
+
+	.nav-links a:hover {
+		color: var(--text);
+		background: var(--bg-panel);
+	}
+
+	/* Active section gets a glowing underline. */
+	.nav-links a.active {
+		color: var(--text);
+	}
+
+	.nav-links a.active::after {
+		content: '';
+		position: absolute;
+		left: 0.7rem;
+		right: 0.7rem;
+		bottom: 0.15rem;
+		height: 2px;
+		border-radius: 2px;
+		background: linear-gradient(90deg, var(--accent), var(--accent-2));
+		box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent);
+	}
+
+	.nav-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		flex: none;
+	}
+
+	/* Hidden over the opening block, revealed once it scrolls away. */
+	.nav-resume {
+		flex: none;
+		padding: 0.4rem 0.85rem;
+		font-size: 0.82rem;
+		text-decoration: none;
+		border: 1px solid var(--accent);
+		color: var(--accent);
+		border-radius: 6px;
+		opacity: 0;
+		transform: translateY(-6px);
+		pointer-events: none;
+		transition: opacity 0.35s ease, transform 0.35s ease, box-shadow 0.2s ease;
+	}
+
+	.nav.show-resume .nav-resume {
+		opacity: 1;
+		transform: none;
+		pointer-events: auto;
+	}
+
+	.nav-resume:hover {
+		color: var(--accent);
+		box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 30%, transparent);
+		transform: translateY(-1px);
+	}
+
+	/* Theme toggle. Always visible, unlike Resume, since a reader may want to
+	   switch before they have scrolled anywhere. */
+	.theme-toggle {
+		display: grid;
+		place-items: center;
+		width: 2.05rem;
+		height: 2.05rem;
+		padding: 0;
+		flex: none;
+		cursor: pointer;
+		border: 1px solid var(--border-strong);
+		border-radius: 6px;
+		background: transparent;
+		color: var(--text-muted);
+		transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.theme-toggle:hover {
+		color: var(--accent);
+		border-color: var(--accent);
+		box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 26%, transparent);
+	}
+
+	.theme-toggle svg {
+		width: 1.05rem;
+		height: 1.05rem;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.7;
+		stroke-linecap: round;
+		grid-area: 1 / 1;
+		transition: opacity 0.25s ease, transform 0.35s ease;
+	}
+
+	/* In the dark theme the button offers the sun, and vice versa: the icon
+	   shows the destination, not the current state. */
+	.icon-moon {
+		opacity: 0;
+		transform: rotate(-70deg) scale(0.6);
+	}
+
+	:global(html[data-theme='light']) .icon-sun {
+		opacity: 0;
+		transform: rotate(70deg) scale(0.6);
+	}
+
+	:global(html[data-theme='light']) .icon-moon {
+		opacity: 1;
+		transform: none;
+	}
+
+	@media (max-width: 640px) {
+		.nav-inner {
+			gap: 0.6rem;
+			padding-inline: 0.9rem;
+		}
+
+		.nav-resume {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.theme-toggle svg {
+			transition: opacity 0.25s ease;
+			transform: none;
+		}
+	}
+</style>
+
+<script>
+	const nav = document.getElementById('nav');
+	const links = document.querySelectorAll<HTMLAnchorElement>('.nav-links a[data-nav]');
+
+	// Solidify the bar once the page scrolls, and reveal the Resume button as
+	// soon as the opening block has passed under the nav. Watching the bottom
+	// of that block rather than the top of a later section means the button
+	// appears the moment the introduction is done, whatever follows it.
+	if (nav) {
+		const opening = document.getElementById('top');
+
+		const onScroll = () => {
+			nav.classList.toggle('stuck', window.scrollY > 24);
+
+			if (opening) {
+				const passed = opening.getBoundingClientRect().bottom <= nav.offsetHeight + 8;
+				nav.classList.toggle('show-resume', passed);
+			}
+		};
+
+		window.addEventListener('scroll', onScroll, { passive: true });
+		window.addEventListener('resize', onScroll);
+		onScroll();
+	}
+
+	// Scroll-spy: highlight whichever section owns the viewport.
+	const targets = Array.from(links)
+		.map((a) => document.getElementById(a.dataset.nav!))
+		.filter((el): el is HTMLElement => Boolean(el));
+
+	if (targets.length && 'IntersectionObserver' in window) {
+		const visible = new Map<string, number>();
+
+		const spy = new IntersectionObserver(
+			(entries) => {
+				for (const e of entries) {
+					visible.set(e.target.id, e.isIntersecting ? e.intersectionRatio : 0);
+				}
+
+				let bestId = '';
+				let bestRatio = 0;
+				for (const [id, ratio] of visible) {
+					if (ratio > bestRatio) {
+						bestRatio = ratio;
+						bestId = id;
+					}
+				}
+
+				links.forEach((a) => a.classList.toggle('active', a.dataset.nav === bestId));
+			},
+			{ rootMargin: '-20% 0px -55% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] }
+		);
+
+		targets.forEach((t) => spy.observe(t));
+	}
+</script>
+
+<script>
+	// Theme toggle. The initial theme is applied by an inline script in the
+	// document head so the page never flashes the wrong palette; this only
+	// handles clicks and keeps the button's state in sync.
+	const toggle = document.getElementById('theme-toggle');
+
+	if (toggle) {
+		const sync = () => {
+			const isLight = document.documentElement.dataset.theme === 'light';
+			toggle.setAttribute('aria-pressed', String(isLight));
+		};
+
+		toggle.addEventListener('click', () => {
+			const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+			document.documentElement.dataset.theme = next;
+			// Remembered per browser, so a return visit keeps the chosen theme.
+			try {
+				localStorage.setItem('theme', next);
+			} catch {
+				// Private browsing can refuse storage; the toggle still works.
+			}
+			sync();
+		});
+
+		sync();
+	}
+</script>
