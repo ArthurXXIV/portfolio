@@ -24,6 +24,21 @@ const initials = profile.name
 		<div class="nav-actions">
 			<a class="nav-resume" href={profile.resume}>Resume</a>
 
+			{/* Shown only once the links no longer fit. aria-controls ties it to
+			    the panel so assistive tech knows what it opens. */}
+			<button
+				class="nav-menu-btn"
+				id="nav-menu-btn"
+				type="button"
+				aria-label="Open menu"
+				aria-expanded="false"
+				aria-controls="nav-menu"
+			>
+				<span class="dot"></span>
+				<span class="dot"></span>
+				<span class="dot"></span>
+			</button>
+
 			{/* aria-pressed carries the state, so the button needs no visible label.
 			    Both icons ship and CSS shows whichever matches the active theme. */}
 			<button class="theme-toggle" id="theme-toggle" type="button" aria-pressed="false">
@@ -40,6 +55,21 @@ const initials = profile.name
 				</svg>
 			</button>
 		</div>
+	</div>
+
+	{/* The same section list again, stacked, plus Resume, which is otherwise
+	    unreachable on a phone. */}
+	<div class="nav-menu" id="nav-menu" hidden>
+		{
+			sections.map((s) => (
+				<a href={`#${s.id}`} data-menu-link>
+					{s.label}
+				</a>
+			))
+		}
+		<a class="nav-menu-resume" href={profile.resume} data-menu-link>
+			Resume
+		</a>
 	</div>
 </header>
 
@@ -88,8 +118,6 @@ const initials = profile.name
 		display: flex;
 		gap: 0.25rem;
 		margin-inline: auto;
-		overflow-x: auto;
-		scrollbar-width: none;
 	}
 
 	.nav-links::-webkit-scrollbar {
@@ -214,14 +242,144 @@ const initials = profile.name
 		transform: none;
 	}
 
-	@media (max-width: 640px) {
+	/* Menu button ---------------------------------------------------------- */
+
+	.nav-menu-btn {
+		display: none;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 3px;
+		/* 44px is the minimum comfortable touch target. */
+		width: 44px;
+		height: 44px;
+		padding: 0;
+		flex: none;
+		cursor: pointer;
+		border: 1px solid var(--border-strong);
+		border-radius: 6px;
+		background: transparent;
+		transition: border-color 0.2s ease;
+	}
+
+	.nav-menu-btn .dot {
+		width: 4px;
+		height: 4px;
+		border-radius: 50%;
+		background: var(--text-muted);
+		transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease,
+			background 0.2s ease;
+	}
+
+	.nav-menu-btn[aria-expanded='true'] {
+		border-color: var(--accent);
+	}
+
+	.nav-menu-btn[aria-expanded='true'] .dot {
+		background: var(--accent);
+	}
+
+	/* The three dots collapse into a cross when the panel is open. */
+	.nav-menu-btn[aria-expanded='true'] .dot:nth-child(1) {
+		transform: translateY(7px) rotate(45deg) scaleX(4);
+		border-radius: 2px;
+	}
+
+	.nav-menu-btn[aria-expanded='true'] .dot:nth-child(2) {
+		opacity: 0;
+	}
+
+	.nav-menu-btn[aria-expanded='true'] .dot:nth-child(3) {
+		transform: translateY(-7px) rotate(-45deg) scaleX(4);
+		border-radius: 2px;
+	}
+
+	/* Dropdown panel ------------------------------------------------------- */
+
+	/* The `hidden` attribute only works through the browser default stylesheet,
+	   so the `display: flex` below would silently defeat it. Declaring it here
+	   wins on specificity (class + attribute beats class alone), regardless of
+	   source order. */
+	.nav-menu[hidden] {
+		display: none;
+	}
+
+	.nav-menu {
+		position: absolute;
+		top: calc(100% + 0.4rem);
+		right: 1rem;
+		z-index: 60;
+		display: flex;
+		flex-direction: column;
+		min-width: 12rem;
+		padding: 0.4rem;
+		border: 1px solid var(--border-strong);
+		border-radius: 10px;
+		background: color-mix(in srgb, var(--bg-raised) 96%, transparent);
+		backdrop-filter: blur(14px);
+		box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+		transform-origin: top right;
+		animation: menu-in 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	@keyframes menu-in {
+		from {
+			opacity: 0;
+			transform: translateY(-6px) scale(0.97);
+		}
+	}
+
+	.nav-menu a {
+		padding: 0.7rem 0.8rem;
+		font-size: 0.92rem;
+		text-decoration: none;
+		color: var(--text-muted);
+		border-radius: 6px;
+	}
+
+	.nav-menu a:active,
+	.nav-menu a:hover {
+		color: var(--text);
+		background: var(--bg-panel);
+	}
+
+	.nav-menu-resume {
+		margin-top: 0.25rem;
+		border-top: 1px solid var(--border);
+		border-radius: 0 0 6px 6px;
+		color: var(--accent) !important;
+	}
+
+	/* Sohail's site collapses its nav at 901px rather than a phone width, which
+	   is the right call: the links stop fitting comfortably long before the
+	   screen is phone-sized. */
+	@media (max-width: 900px) {
+		.nav-links {
+			display: none;
+		}
+
+		.nav-menu-btn {
+			display: flex;
+		}
+
 		.nav-inner {
 			gap: 0.6rem;
 			padding-inline: 0.9rem;
+			justify-content: space-between;
 		}
 
 		.nav-resume {
 			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.nav-menu {
+			animation: none;
+		}
+
+		.nav-menu-btn .dot {
+			transition: opacity 0.2s ease;
 		}
 	}
 
@@ -234,6 +392,46 @@ const initials = profile.name
 </style>
 
 <script>
+	// Mobile menu -----------------------------------------------------------
+	const menuBtn = document.getElementById('nav-menu-btn');
+	const menu = document.getElementById('nav-menu');
+
+	if (menuBtn && menu) {
+		const setOpen = (open: boolean) => {
+			menuBtn.setAttribute('aria-expanded', String(open));
+			menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+			menu.hidden = !open;
+		};
+
+		menuBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			setOpen(menu.hidden === true);
+		});
+
+		// Tapping a link jumps to the section, so the panel should get out of
+		// the way rather than sit over what you just navigated to.
+		menu.querySelectorAll('[data-menu-link]').forEach((link) => {
+			link.addEventListener('click', () => setOpen(false));
+		});
+
+		document.addEventListener('click', (e) => {
+			if (menu.hidden !== true && !menu.contains(e.target as Node)) setOpen(false);
+		});
+
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'Escape' && menu.hidden !== true) {
+				setOpen(false);
+				menuBtn.focus();
+			}
+		});
+
+		// Closing on resize avoids a panel left hanging open once the full nav
+		// reappears at desktop width.
+		window.addEventListener('resize', () => {
+			if (window.innerWidth > 900 && menu.hidden !== true) setOpen(false);
+		});
+	}
+
 	const nav = document.getElementById('nav');
 	const links = document.querySelectorAll<HTMLAnchorElement>('.nav-links a[data-nav]');
 

@@ -250,6 +250,16 @@ const {
 		}
 	}
 
+	/* On touch there is no hover to trigger the slide, and the two rules above
+	   combined to leave the tag parked over the photo with the frame covering
+	   its middle. Park it fully clear instead. */
+	@media (max-width: 1180px) and (hover: none) {
+		.tag {
+			opacity: 1;
+			transform: translateY(0);
+		}
+	}
+
 	@media (prefers-reduced-motion: reduce) {
 		.bezel,
 		.portrait::after,

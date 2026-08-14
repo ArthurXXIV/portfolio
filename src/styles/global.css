@@ -72,6 +72,10 @@ body {
 	font-family: var(--font-sans);
 	font-size: 16px;
 	line-height: 1.65;
+	/* Safety net only. This clips anything that overflows sideways, which means
+	   a layout bug shows up as cut-off text rather than a scrollbar, so it hides
+	   the symptom instead of the cause. Real overflow still has to be fixed at
+	   the source. */
 	overflow-x: hidden;
 	-webkit-font-smoothing: antialiased;
 }
