@@ -422,8 +422,26 @@ import { about, profile } from '../../data/content';
 	@media (max-width: 860px) {
 		.hero-inner {
 			flex-direction: column-reverse;
-			align-items: flex-start;
+			/* Must stay stretch. With flex-start the copy column shrinks to fit
+			   its widest child, and because .readout is width: max-content that
+			   made the column wider than the screen and pushed the whole page
+			   into horizontal overflow. */
+			align-items: stretch;
 			gap: 2rem;
+		}
+
+		.hero-copy {
+			width: 100%;
+		}
+
+		/* Fill the column and let the values wrap instead of running off. */
+		.readout {
+			width: auto;
+			column-gap: 0.9rem;
+		}
+
+		.tagline-row {
+			max-width: 100%;
 		}
 	}
 

@@ -86,7 +86,9 @@ import { projects } from '../../data/content';
 <style>
 	.project-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+		/* min() so the card can fall below its 19rem floor on very narrow
+		   screens rather than overflowing them. */
+		grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
 		gap: 1.25rem;
 	}
 
