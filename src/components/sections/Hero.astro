@@ -420,6 +420,14 @@ import { about, profile } from '../../data/content';
 	/* Below two columns the portrait goes above the copy, since a face is a
 	   better first impression on a phone than a wall of text. */
 	@media (max-width: 860px) {
+		/* Block, not flex. As a flex item .hero-inner was sized from its
+		   contents and could refuse to shrink below their intrinsic width,
+		   which is what kept forcing the copy wider than the screen. A block
+		   simply takes the width it is given. */
+		.hero {
+			display: block;
+		}
+
 		.hero-inner {
 			flex-direction: column-reverse;
 			/* Must stay stretch. With flex-start the copy column shrinks to fit
@@ -430,8 +438,36 @@ import { about, profile } from '../../data/content';
 			gap: 2rem;
 		}
 
+		.hero-inner,
 		.hero-copy {
 			width: 100%;
+			max-width: 100%;
+			min-width: 0;
+		}
+
+		/* width: max-content here contributed its full unwrapped width to every
+		   ancestor's intrinsic sizing, max-width: 100% notwithstanding, because
+		   percentage maximums are ignored during intrinsic sizing. */
+		.tagline-row {
+			width: auto;
+		}
+
+		/* Let the tiles fall below their 9.5rem floor rather than overflow. */
+		.hero-stats {
+			grid-template-columns: repeat(auto-fit, minmax(min(9.5rem, 100%), 1fr));
+			max-width: 100%;
+		}
+
+		.blurb {
+			max-width: 100%;
+		}
+
+		.readout {
+			max-width: 100%;
+		}
+
+		.readout dd {
+			flex-wrap: wrap;
 		}
 
 		/* Fill the column and let the values wrap instead of running off. */
@@ -440,9 +476,6 @@ import { about, profile } from '../../data/content';
 			column-gap: 0.9rem;
 		}
 
-		.tagline-row {
-			max-width: 100%;
-		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {

@@ -25,15 +25,50 @@
 			}
 		});
 
-		dialog.querySelector('.modal-close')?.addEventListener('click', () => dialog.close());
+		// Closing has to be deferred so the exit animation can play. A dialog
+		// closed outright vanishes instantly: the [open] attribute is gone
+		// before any animation could run, which is why the closing state is
+		// carried on a data attribute instead.
+		const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		const close = () => {
+			if (reduced) {
+				dialog.close();
+				return;
+			}
+
+			dialog.dataset.state = 'closing';
+
+			// Driven by the animation actually finishing rather than a hardcoded
+			// timeout, so the two can never drift apart.
+			dialog.addEventListener(
+				'animationend',
+				() => {
+					delete dialog.dataset.state;
+					dialog.close();
+				},
+				{ once: true }
+			);
+		};
+
+		dialog.querySelector('.modal-close')?.addEventListener('click', close);
 
 		// A click landing on the dialog itself is a click on the backdrop,
 		// since .modal-inner covers the whole visible panel.
 		dialog.addEventListener('click', (e) => {
-			if (e.target === dialog) dialog.close();
+			if (e.target === dialog) close();
+		});
+
+		// Esc closes natively and instantly, so intercept it to route through
+		// the same animated path.
+		dialog.addEventListener('cancel', (e) => {
+			if (reduced) return;
+			e.preventDefault();
+			close();
 		});
 
 		dialog.addEventListener('close', () => {
+			delete dialog.dataset.state;
 			document.body.style.overflow = '';
 			card.focus();
 		});

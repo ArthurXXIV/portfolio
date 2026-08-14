@@ -28,6 +28,11 @@
 	--font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
 	--font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
 
+	/* Borrowed from Sohail's site: the easing iOS uses for sheets. Almost no
+	   acceleration, a long decelerating tail, so a panel arrives rather than
+	   springs. */
+	--ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+
 	--maxw: 62rem;
 	--gap: clamp(4rem, 10vw, 7rem);
 
@@ -63,6 +68,13 @@
 
 html {
 	scroll-behavior: smooth;
+}
+
+/* Stops the page behind a sheet rubber-banding, and kills pull-to-refresh
+   while dragging inside one. */
+html,
+body {
+	overscroll-behavior-y: none;
 }
 
 body {
@@ -444,7 +456,7 @@ h3 {
 	margin: 0 0 1.25rem;
 	padding: 0;
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(min(9rem, 100%), 1fr));
 	gap: 0.75rem;
 }
 
@@ -481,6 +493,57 @@ h3 {
 	}
 }
 
+/* On a phone a centred dialog with side margins wastes the little width there
+   is, and any content wider than it gets clipped by overflow-x rather than
+   scrolled. A bottom sheet removes both problems: nothing to centre, nothing
+   to clip against.
+
+   94dvh rather than 100 is taken from Sohail's sheets. Leaving a sliver of the
+   page visible above is what tells you this is a layer sitting on top of
+   something, and therefore that it can be dismissed. */
+@media (max-width: 640px) {
+	.modal,
+	.modal-wide {
+		width: 100%;
+		max-width: 100%;
+		height: 94dvh;
+		max-height: 94dvh;
+		/* auto on top, zero elsewhere: pins the sheet to the bottom edge. */
+		margin: auto 0 0;
+		border: 1px solid var(--border-strong);
+		border-bottom: 0;
+		border-radius: 16px 16px 0 0;
+	}
+
+	.modal-inner {
+		padding: 1.25rem 1rem 2.5rem;
+	}
+
+	/* Rises from below rather than popping in place, which is the motion a
+	   sheet anchored to the bottom edge implies. */
+	.modal[open] {
+		animation: sheet-in 0.25s var(--ease-sheet);
+	}
+
+	.modal[data-state='closing'] {
+		animation: sheet-out 0.18s var(--ease-sheet) forwards;
+	}
+}
+
+@keyframes sheet-in {
+	from {
+		opacity: 0;
+		transform: translateY(16px);
+	}
+}
+
+@keyframes sheet-out {
+	to {
+		opacity: 0;
+		transform: translateY(16px);
+	}
+}
+
 /* Modals ------------------------------------------------------------------ */
 
 .modal {
@@ -511,11 +574,34 @@ h3 {
 
 /* Pop-out entrance, matching the card it grew from. */
 .modal[open] {
-	animation: modal-pop 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+	animation: modal-pop 0.25s var(--ease-sheet);
 }
 
 .modal[open]::backdrop {
-	animation: backdrop-in 0.28s ease;
+	animation: backdrop-in 0.25s ease;
+}
+
+/* Closing is deliberately quicker than opening, 0.18s against 0.25s. Waiting
+   as long to leave as to arrive makes a dismissal feel unresponsive. */
+.modal[data-state='closing'] {
+	animation: modal-out 0.18s ease-in forwards;
+}
+
+.modal[data-state='closing']::backdrop {
+	animation: backdrop-out 0.18s ease-in forwards;
+}
+
+@keyframes modal-out {
+	to {
+		opacity: 0;
+		transform: translateY(10px) scale(0.98);
+	}
+}
+
+@keyframes backdrop-out {
+	to {
+		opacity: 0;
+	}
 }
 
 @keyframes modal-pop {
