@@ -74,8 +74,13 @@ import { about, profile } from '../../data/content';
 			</ul>
 		</div>
 
-		{/* Placeholder until a photo arrives: pass src to swap it in. */}
-		<Portrait initials="AN" symbol="ATHN" alt={`Portrait of ${profile.name}`} />
+		<Portrait
+			src="/portrait.jpg"
+			objectPosition="50% 50%"
+			initials="AN"
+			symbol="ATHN"
+			alt={`Portrait of ${profile.name}`}
+		/>
 	</div>
 </header>
 

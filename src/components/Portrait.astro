@@ -19,6 +19,12 @@ interface Props {
 	symbol?: string;
 	/** Cycled one per hover, in order. */
 	moves?: string[];
+	/**
+	 * Which part of a non-square photo to keep. The default favours the upper
+	 * middle, where a face sits in a standing portrait, so an uncropped phone
+	 * photo frames correctly without editing.
+	 */
+	objectPosition?: string;
 }
 
 const {
@@ -29,6 +35,7 @@ const {
 	// An arc rather than three jokes: a rating, then the listing, then the
 	// demand for it.
 	moves = ['STRONG BUY', 'IPO MAY 2027', 'OVERSUBSCRIBED'],
+	objectPosition = '50% 22%',
 } = Astro.props;
 ---
 
@@ -41,7 +48,15 @@ const {
 	<div class="frame">
 		{
 			src ? (
-				<img src={src} alt={alt} width="512" height="512" loading="eager" decoding="async" />
+				<img
+					src={src}
+					alt={alt}
+					width="512"
+					height="512"
+					loading="eager"
+					decoding="async"
+					style={`object-position: ${objectPosition}`}
+				/>
 			) : (
 				<span class="placeholder">
 					<span class="placeholder-initials mono">{initials}</span>
@@ -300,10 +315,13 @@ const {
 
 		if (moves.length < 2) return;
 
+		// Advance AFTER painting, not before. Incrementing first meant the very
+		// first hover skipped straight past moves[0], so the label rendered into
+		// the HTML was never actually seen.
 		let i = 0;
 		portrait.addEventListener('pointerenter', () => {
-			i = (i + 1) % moves.length;
 			move.textContent = `▲ ${moves[i]}`;
+			i = (i + 1) % moves.length;
 		});
 	});
 </script>

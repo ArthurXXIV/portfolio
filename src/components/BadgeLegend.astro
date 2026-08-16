@@ -1,0 +1,102 @@
+---
+// Floating key for the droid badge, parked in the bottom-right corner.
+//
+// It follows the page the way the nav does, but unlike the nav it is not
+// always relevant: it appears only while a section that actually carries the
+// badge is on screen, and gets out of the way everywhere else. A legend for
+// something you cannot currently see is just clutter.
+import Droid from './Droid.astro';
+
+// Sections whose cards can carry the badge.
+const SECTIONS = ['experience', 'projects'];
+---
+
+<aside class="badge-legend" id="badge-legend" data-sections={SECTIONS.join(',')} aria-hidden="true">
+	<Droid label="Featured" size={16} />
+	<span class="badge-legend-text">marks my strongest work</span>
+</aside>
+
+<style>
+	.badge-legend {
+		position: fixed;
+		right: 1.5rem;
+		bottom: 1.5rem;
+		z-index: 40;
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		padding: 0.5rem 0.85rem 0.5rem 0.6rem;
+		border: 1px solid var(--border-strong);
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--bg-raised) 88%, transparent);
+		backdrop-filter: blur(14px) saturate(120%);
+		box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+		/* Decoration for a marker that is already described in each card's own
+		   accessible name, so it is not worth announcing twice. */
+		pointer-events: none;
+		opacity: 0;
+		transform: translateY(10px);
+		transition: opacity 0.35s ease, transform 0.35s var(--ease-sheet);
+	}
+
+	.badge-legend.show {
+		opacity: 1;
+		transform: none;
+	}
+
+	.badge-legend-text {
+		font-size: 0.74rem;
+		color: var(--text-faint);
+		white-space: nowrap;
+	}
+
+	/* Desktop only, as asked. It would also have nowhere to sit on a phone
+	   without covering the content it is explaining. */
+	@media (max-width: 900px) {
+		.badge-legend {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.badge-legend {
+			transition: opacity 0.2s ease;
+			transform: none;
+		}
+	}
+</style>
+
+<script>
+	const legend = document.getElementById('badge-legend');
+
+	if (legend && 'IntersectionObserver' in window) {
+		const ids = (legend.dataset.sections || '').split(',').filter(Boolean);
+		const targets = ids
+			.map((id) => document.getElementById(id))
+			.filter((el): el is HTMLElement => Boolean(el));
+
+		// Tracked per section rather than as a single flag, since Experience and
+		// Projects are adjacent and can both be partly visible at once. A plain
+		// boolean would flicker off as one leaves while the other is still there.
+		const visible = new Set<string>();
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting) visible.add(entry.target.id);
+					else visible.delete(entry.target.id);
+				}
+
+				legend.classList.toggle('show', visible.size > 0);
+			},
+			// A thin band across the middle of the viewport, not the whole of it.
+			// With the old -15% the tail of Projects still counted as visible
+			// well into Education, because these sections are tall and adjacent.
+			// Requiring a section to cross the centre line means only whichever
+			// one you are actually reading counts.
+			{ rootMargin: '-48% 0px -48% 0px' }
+		);
+
+		targets.forEach((t) => observer.observe(t));
+	}
+</script>
