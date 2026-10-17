@@ -42,6 +42,24 @@ export const projects = [
 		dataset: null,
 	},
 	{
+		name: 'Lock & Block',
+		logo: null,
+		logoPlate: false,
+		logoWide: false,
+		note: null,
+		symbol: 'LNB',
+		subtitle: 'Ultimate Frisbee Field Guide for Rookies',
+		featured: false,
+		stack: ['JavaScript', 'HTML Canvas', 'Vercel'],
+		body:
+			'A browser game that teaches ultimate frisbee to new players. An autoplay tutorial walks through ' +
+			'formations like Vertical Stack, Zipper, End Zone Set, and HO Stack, then a playable mode puts you in ' +
+			'the handler role timing throws to open cutters, with a live HUD tracking force, stall count, and completions.',
+		tags: ['Game', 'Education'],
+		href: 'https://lock-n-block.vercel.app/',
+		dataset: null,
+	},
+	{
 		name: 'Green Technology: High-Speed Rail in India',
 		logo: '/logos/igi_global.png',
 		logoPlate: false, // self-contained blue wordmark
