@@ -43,7 +43,7 @@ export const projects = [
 	},
 	{
 		name: 'Lock & Block',
-		logo: null,
+		logo: '/logos/lock_n_block.png',
 		logoPlate: false,
 		logoWide: false,
 		note: null,
