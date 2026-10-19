@@ -17,6 +17,30 @@ const {
 	title = `${profile.name} · ${profile.tagline}`,
 	description = profile.blurb,
 } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+
+// Structured data Google reads for the site name shown above search results
+// (instead of "Vercel") and for the person behind the site.
+const site = Astro.site?.href;
+const jsonLd = {
+	'@context': 'https://schema.org',
+	'@graph': [
+		{
+			'@type': 'WebSite',
+			name: profile.name,
+			alternateName: ['Atharva', 'AN'],
+			url: site,
+		},
+		{
+			'@type': 'Person',
+			name: profile.name,
+			jobTitle: profile.tagline,
+			url: site,
+			image: new URL('/portrait.jpg', site).href,
+		},
+	],
+};
 ---
 
 <html lang="en">
@@ -24,7 +48,10 @@ const {
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
+		<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+		<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<link rel="canonical" href={canonical} />
 		<meta name="generator" content={Astro.generator} />
 
 		<title>{title}</title>
@@ -33,11 +60,15 @@ const {
 		<meta name="google-site-verification" content="npscT66R4Ll8K8-yGme0rG-5s0NbVhyU7H9RQR5wFok" />
 
 		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content={profile.name} />
+		<meta property="og:url" content={canonical} />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
+
+		<script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
 		{/* Runs before the body paints, so a reader who chose light mode never
 		    sees a flash of the dark palette first. is:inline keeps Astro from
