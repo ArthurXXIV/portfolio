@@ -29,7 +29,7 @@ export const projects = [
 		logoWide: false,
 		symbol: 'VDET',
 		subtitle: 'Datathon 2.0 Winner · Team project',
-		featured: true,
+		featured: false,
 		// Team project: the canonical repo belongs to a teammate; this links there.
 		note: 'Built with @yashsindhu04. The canonical repository lives on their account.',
 		stack: ['Python', 'YOLO', 'OpenCV', 'Streamlit'],
@@ -49,7 +49,7 @@ export const projects = [
 		note: null,
 		symbol: 'LNB',
 		subtitle: 'Ultimate Frisbee Field Guide for Rookies',
-		featured: false,
+		featured: true,
 		stack: ['JavaScript', 'HTML Canvas', 'Vercel'],
 		body:
 			'A browser game that teaches ultimate frisbee to new players. An autoplay tutorial walks through ' +
